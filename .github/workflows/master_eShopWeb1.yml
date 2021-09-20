@@ -47,11 +47,22 @@ jobs:
       with:
         name: .net-app
 
-    - name: Deploy to Azure Web App
-      id: deploy-to-webapp
+    - name: Deploy to 1 Azure Web App
+      id: deploy-to-webapp1
       uses: azure/webapps-deploy@v2
       with:
         app-name: 'eShopWeb1'
         slot-name: 'production'
         publish-profile: ${{ secrets.AzureAppService_PublishProfile_1b9074aa8979459ab777f8ce12637c85 }}
         package: .
+        
+    - name: Deploy to 2 Azure Web App
+      id: deploy-to-webapp2
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: 'eShopWeb2'
+        slot-name: 'production'
+        publish-profile: ${{ secrets.ESHOPONWEB2WEBAPP_PUBLISHPROFILE }}
+        package: .
+        
+      
