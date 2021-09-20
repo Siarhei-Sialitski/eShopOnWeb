@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Text;
 using AutoMapper;
 using BlazorShared;
 using MediatR;
@@ -13,14 +15,11 @@ using Microsoft.eShopWeb.ApplicationCore.Services;
 using Microsoft.eShopWeb.Infrastructure.Data;
 using Microsoft.eShopWeb.Infrastructure.Identity;
 using Microsoft.eShopWeb.Infrastructure.Logging;
-using Microsoft.eShopWeb.Infrastructure.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Microsoft.eShopWeb.PublicApi
 {
@@ -38,10 +37,10 @@ namespace Microsoft.eShopWeb.PublicApi
         public void ConfigureDevelopmentServices(IServiceCollection services)
         {
             // use in-memory database
-            ConfigureInMemoryDatabases(services);
+            //ConfigureInMemoryDatabases(services);
 
             // use real database
-            //ConfigureProductionServices(services);
+            ConfigureProductionServices(services);
         }
 
         public void ConfigureDockerServices(IServiceCollection services)
@@ -94,9 +93,8 @@ namespace Microsoft.eShopWeb.PublicApi
             services.AddScoped(typeof(IAppLogger<>), typeof(LoggerAdapter<>));
             services.AddScoped<ITokenClaimsService, IdentityTokenClaimService>();
 
-            var baseUrlConfig = new BaseUrlConfiguration();
-            Configuration.Bind(BaseUrlConfiguration.CONFIG_NAME, baseUrlConfig);            
-
+            var webEndpointsConfiguration = new WebEndpointsConfiguration();
+            Configuration.Bind(WebEndpointsConfiguration.CONFIG_NAME, webEndpointsConfiguration); 
             services.AddMemoryCache();
 
             var key = Encoding.ASCII.GetBytes(AuthorizationConstants.JWT_SECRET_KEY);
@@ -122,7 +120,8 @@ namespace Microsoft.eShopWeb.PublicApi
                 options.AddPolicy(name: CORS_POLICY,
                                   builder =>
                                   {
-                                      builder.WithOrigins(baseUrlConfig.WebBase.Replace("host.docker.internal", "localhost").TrimEnd('/'));
+                                      builder.WithOrigins(webEndpointsConfiguration.WebBase1.Replace("host.docker.internal", "localhost").TrimEnd('/'));
+                                      builder.WithOrigins(webEndpointsConfiguration.WebBase2.Replace("host.docker.internal", "localhost").TrimEnd('/'));
                                       builder.AllowAnyMethod();
                                       builder.AllowAnyHeader();
                                   });

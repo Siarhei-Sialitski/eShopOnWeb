@@ -1,4 +1,10 @@
-﻿using Ardalis.ListStartupServices;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Net.Http;
+using System.Net.Mime;
+using Ardalis.ListStartupServices;
 using BlazorAdmin;
 using BlazorAdmin.Services;
 using Blazored.LocalStorage;
@@ -11,6 +17,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
+using Microsoft.AspNetCore.Rewrite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.eShopWeb.ApplicationCore.Interfaces;
 using Microsoft.eShopWeb.Infrastructure.Data;
@@ -20,12 +27,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
-using System.Net.Mime;
 
 namespace Microsoft.eShopWeb.Web
 {
@@ -43,10 +44,10 @@ namespace Microsoft.eShopWeb.Web
         public void ConfigureDevelopmentServices(IServiceCollection services)
         {
             // use in-memory database
-            ConfigureInMemoryDatabases(services);
+            //ConfigureInMemoryDatabases(services);
 
             // use real database
-            //ConfigureProductionServices(services);
+            ConfigureProductionServices(services);
         }
 
         public void ConfigureDockerServices(IServiceCollection services)
@@ -95,6 +96,7 @@ namespace Microsoft.eShopWeb.Web
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            
             services.AddCookieSettings();
 
 
@@ -147,6 +149,13 @@ namespace Microsoft.eShopWeb.Web
             
             var baseUrlConfig = new BaseUrlConfiguration();
             Configuration.Bind(BaseUrlConfiguration.CONFIG_NAME, baseUrlConfig);
+            services.AddCors(o =>
+            {
+                o.AddDefaultPolicy(b =>
+                {
+                    b.WithOrigins(baseUrlConfig.ApiBase).AllowAnyMethod();
+                });
+            });
             services.AddScoped<BaseUrlConfiguration>(sp => baseUrlConfig);
             // Blazor Admin Required Services for Prerendering
             services.AddScoped<HttpClient>(s => new HttpClient
@@ -212,12 +221,14 @@ namespace Microsoft.eShopWeb.Web
                 app.UseHsts();
             }
 
+            app.UseRewriter(new RewriteOptions().AddRewrite(@"^appsettings\.json$", "configuration", false));
             app.UseHttpsRedirection();
             app.UseBlazorFrameworkFiles();
             app.UseStaticFiles();
             app.UseRouting();
 
             app.UseCookiePolicy();
+            app.UseCors();
             app.UseAuthentication();
             app.UseAuthorization();
 
