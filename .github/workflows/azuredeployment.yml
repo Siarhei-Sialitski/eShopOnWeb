@@ -57,7 +57,7 @@ jobs:
     #Run Dotnet Build and Publish for api app
     - name: Api app build and publish
       run: |
-       cd ..\PublicApi 
+       cd ..\\PublicApi 
        dotnet build --configuration Release
        dotnet publish -c Release -o ${{ env.DOTNET_ROOT }}/apiapp
 
