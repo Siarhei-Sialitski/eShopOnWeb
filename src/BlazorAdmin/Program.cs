@@ -22,7 +22,6 @@ namespace BlazorAdmin
             var baseUrlConfig = new BaseUrlConfiguration();
             baseUrlConfig.ApiBase = builder.Configuration.GetSection("apiBase").Value;
             baseUrlConfig.WebBase = builder.Configuration.GetSection("webBase").Value;
-            //builder.Configuration.Bind(BaseUrlConfiguration.CONFIG_NAME, baseUrlConfig);
             builder.Services.AddScoped<BaseUrlConfiguration>(sp => baseUrlConfig);
 
             builder.Services.AddScoped(sp => new HttpClient() { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
