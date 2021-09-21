@@ -27,10 +27,7 @@ jobs:
       with:
         dotnet-version: '5.0.x'
         include-prerelease: true
-
-    - name: Install dependencies
-      run: dotnet restore
-
+        
     #Run Dotnet Build and Publish for web app
     - name: Web app build and publish
       run: |
