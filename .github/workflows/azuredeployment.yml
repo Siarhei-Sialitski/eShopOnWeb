@@ -31,12 +31,11 @@ jobs:
     #Run Dotnet Build and Publish for web app
     - name: Web app build and publish
       run: |
-       dotnet restore
        dotnet build ./src/Web/Web.csproj --configuration Release
        dotnet publish ./src/Web/Web.csproj - Release -o ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/webapp
 
     #Deploy WebApp1 to Azure Web apps
-    - name: 'Run Azure webapp deploy action using publish profile credentials'
+    - name: 'Deploy azure webapp 1'
       uses: azure/webapps-deploy@v2
       with:
         app-name: ${{env.AZURE_WEBAPP_NAME_1}}
@@ -45,7 +44,7 @@ jobs:
         package: '${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/webapp'
 
     #Deploy WebApp2 to Azure Web apps
-    - name: 'Run Azure webapp deploy action using publish profile credentials'
+    - name: 'Deploy azure webapp 2'
       uses: azure/webapps-deploy@v2
       with:
         app-name: ${{env.AZURE_WEBAPP_NAME_2}}
@@ -57,12 +56,11 @@ jobs:
     #Run Dotnet Build and Publish for api app
     - name: Api app build and publish
       run: |
-       dotnet restore
        dotnet build ./src/PublicApi/PubliApi.csproj --configuration Release
        dotnet publish ./src/PublicApi/PubliApi.csproj - Release -o ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/apiapp
 
     #Deploy to Azure Web apps
-    - name: 'Run Azure webapp deploy action using publish profile credentials'
+    - name: 'Deploy azure api app 1'
       uses: azure/webapps-deploy@v2
       with:
         app-name: ${{env.AZURE_APIAPP_NAME}}
