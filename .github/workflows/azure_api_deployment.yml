@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 env: 
-  AZURE_APIAPP_NAME: eShopOnWebPublicApiSS
+  AZURE_APIAPP_NAME: eshoponwebapiss
   AZURE_WEBAPP_PACKAGE_PATH: '.'
 
 jobs:
