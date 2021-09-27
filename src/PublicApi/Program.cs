@@ -44,11 +44,6 @@ namespace Microsoft.eShopWeb.PublicApi
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
-                .ConfigureLogging(logging =>
-                {
-                    logging.AddApplicationInsights();
-                    logging.AddConsole();
-                })
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
