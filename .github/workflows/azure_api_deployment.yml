@@ -1,0 +1,47 @@
+# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
+# More GitHub Actions for Azure: https://github.com/Azure/actions
+
+name: Azure Apps deploy
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+env: 
+  AZURE_APIAPP_NAME: eShopOnWebPublicApiSS
+  AZURE_WEBAPP_PACKAGE_PATH: '.'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@master
+
+    - name: Set up .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '5.0.x'
+        include-prerelease: true
+
+
+    #Run Dotnet Build and Publish for api app
+    - name: Api app build and publish
+      run: |
+       cd src/PublicApi 
+       dotnet build --configuration Release
+       dotnet publish -c Release -o ${{ env.DOTNET_ROOT }}/apiapp
+
+    #Deploy to Azure Web apps
+    - name: 'Deploy azure api app 1'
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: ${{env.AZURE_APIAPP_NAME}}
+        slot-name: 'stage'
+        publish-profile: ${{ secrets.AZURE_APIAPP_PUBLISHPROFILE }}
+        package: '${{ env.DOTNET_ROOT }}/apiapp'
+
+        
+      
