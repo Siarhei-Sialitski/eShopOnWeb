@@ -20,12 +20,12 @@ namespace Microsoft.eShopWeb.PublicApi.CatalogItemEndpoints
         private readonly IAsyncRepository<CatalogItem> _itemRepository;
         private readonly IUriComposer _uriComposer;
         private readonly IMapper _mapper;
-        private readonly ILogger _logger;
+        private readonly ILogger<ListPaged>  _logger;
 
         public ListPaged(IAsyncRepository<CatalogItem> itemRepository,
             IUriComposer uriComposer,
             IMapper mapper,
-            ILogger logger)
+            ILogger<ListPaged> logger)
         {
             _itemRepository = itemRepository;
             _uriComposer = uriComposer;
