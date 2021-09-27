@@ -93,8 +93,9 @@ namespace Microsoft.eShopWeb.PublicApi
             services.AddScoped(typeof(IAppLogger<>), typeof(LoggerAdapter<>));
             services.AddScoped<ITokenClaimsService, IdentityTokenClaimService>();
 
-            var webEndpointsConfiguration = new WebEndpointsConfiguration();
-            Configuration.Bind(WebEndpointsConfiguration.CONFIG_NAME, webEndpointsConfiguration); 
+            var baseUrlConfig = new BaseUrlConfiguration();
+            Configuration.Bind(BaseUrlConfiguration.CONFIG_NAME, baseUrlConfig);            
+
             services.AddMemoryCache();
 
             var key = Encoding.ASCII.GetBytes(AuthorizationConstants.JWT_SECRET_KEY);
@@ -120,8 +121,7 @@ namespace Microsoft.eShopWeb.PublicApi
                 options.AddPolicy(name: CORS_POLICY,
                                   builder =>
                                   {
-                                      builder.WithOrigins(webEndpointsConfiguration.WebBase1.Replace("host.docker.internal", "localhost").TrimEnd('/'));
-                                      builder.WithOrigins(webEndpointsConfiguration.WebBase2.Replace("host.docker.internal", "localhost").TrimEnd('/'));
+                                      builder.WithOrigins(baseUrlConfig.WebBase.Replace("host.docker.internal", "localhost").TrimEnd('/'));
                                       builder.AllowAnyMethod();
                                       builder.AllowAnyHeader();
                                   });
