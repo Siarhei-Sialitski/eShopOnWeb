@@ -6,7 +6,7 @@ name: Azure Apps deploy
 on:
   push:
     branches:
-      - master
+      - 'logging_and_monitoring'
   workflow_dispatch:
 
 env: 
