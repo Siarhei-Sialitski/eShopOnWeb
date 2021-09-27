@@ -55,7 +55,7 @@ namespace Microsoft.eShopWeb.PublicApi.CatalogItemEndpoints
 
             var items = await _itemRepository.ListAsync(pagedSpec, cancellationToken);
 
-            _logger.LogInformation($"Catalog-Items->Get. Returned {items.Count}");
+            _logger.LogWarning($"Catalog-Items->Get. Returned {items.Count}");
 
             response.CatalogItems.AddRange(items.Select(_mapper.Map<CatalogItemDto>));
             foreach (CatalogItemDto item in response.CatalogItems)
