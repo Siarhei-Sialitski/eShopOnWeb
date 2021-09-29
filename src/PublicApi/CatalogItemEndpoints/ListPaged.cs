@@ -53,7 +53,7 @@ namespace Microsoft.eShopWeb.PublicApi.CatalogItemEndpoints
                 brandId: request.CatalogBrandId,
                 typeId: request.CatalogTypeId);
 
-            throw new Exception("Cannot move further");
+            //throw new Exception("Cannot move further");
 
             var items = await _itemRepository.ListAsync(pagedSpec, cancellationToken);
 
