@@ -10,9 +10,9 @@ on:
   workflow_dispatch:
 
 env: 
-  AZURE_WEBAPP_NAME_1: eShopWeb1
+  AZURE_WEBAPP_NAME_1: eShopOnWebSSweb
   AZURE_WEBAPP_NAME_2: eShopWeb2
-  AZURE_APIAPP_NAME: eShopOnWebPublicApiSS
+  AZURE_APIAPP_NAME: eShopOnWebSSapi
   AZURE_WEBAPP_PACKAGE_PATH: '.'
 
 jobs:
@@ -40,18 +40,18 @@ jobs:
       uses: azure/webapps-deploy@v2
       with:
         app-name: ${{env.AZURE_WEBAPP_NAME_1}}
-        slot-name: 'stage'
+        slot-name: 'production'
         publish-profile: ${{ secrets.AZURE_WEBAPP1_PUBLISHPROFILE }}
         package: '${{ env.DOTNET_ROOT }}/webapp'
 
-    #Deploy WebApp2 to Azure Web apps
-    - name: 'Deploy azure webapp 2'
-      uses: azure/webapps-deploy@v2
-      with:
-        app-name: ${{env.AZURE_WEBAPP_NAME_2}}
-        slot-name: 'stage'
-        publish-profile: ${{ secrets.AZURE_WEBAPP2_PUBLISHPROFILE }}
-        package: '${{ env.DOTNET_ROOT }}/webapp'
+    # #Deploy WebApp2 to Azure Web apps
+    # - name: 'Deploy azure webapp 2'
+      # uses: azure/webapps-deploy@v2
+      # with:
+        # app-name: ${{env.AZURE_WEBAPP_NAME_2}}
+        # slot-name: 'stage'
+        # publish-profile: ${{ secrets.AZURE_WEBAPP2_PUBLISHPROFILE }}
+        # package: '${{ env.DOTNET_ROOT }}/webapp'
 
 
     #Run Dotnet Build and Publish for api app
@@ -66,7 +66,7 @@ jobs:
       uses: azure/webapps-deploy@v2
       with:
         app-name: ${{env.AZURE_APIAPP_NAME}}
-        slot-name: 'stage'
+        slot-name: 'production'
         publish-profile: ${{ secrets.AZURE_APIAPP_PUBLISHPROFILE }}
         package: '${{ env.DOTNET_ROOT }}/apiapp'
 
