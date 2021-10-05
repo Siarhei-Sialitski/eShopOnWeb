@@ -27,7 +27,7 @@ namespace Microsoft.eShopWeb.ApplicationCore.Services
                 BaseAddress = new Uri(_configuration.FuntionBaseUrl)
             };
             
-            httpClient.DefaultRequestHeaders.Add("x-functions-key", "0/a1kR/D4rqrGcyPkzRtoXs4m5h3Tyy5Zkr9muu0jWvhGAySmgRC3Q==");
+            httpClient.DefaultRequestHeaders.Add("x-functions-key", _configuration.FunctionKey);
             await httpClient.PostAsync("CreateOrder", JsonContent.Create(orderItems));
         }
     }

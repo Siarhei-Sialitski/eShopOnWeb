@@ -10,5 +10,6 @@ namespace Microsoft.eShopWeb.ApplicationCore
     {
         public const string CONFIG_NAME = "OrderReserverConfig";
         public string FuntionBaseUrl { get; set; }
+        public string FunctionKey { get; set; }
     }
 }
