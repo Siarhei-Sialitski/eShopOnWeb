@@ -35,7 +35,7 @@ namespace CreateOrder
             }
             else
             {
-                await outputBlob.UploadTextAsync(Convert.ToString(orderInformation));
+                await outputBlob.UploadTextAsync(requestBody);
                 responseMessage = $"Order information was successfully reserved";
             }
 
