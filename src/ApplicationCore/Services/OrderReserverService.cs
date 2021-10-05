@@ -26,9 +26,24 @@ namespace Microsoft.eShopWeb.ApplicationCore.Services
             {
                 BaseAddress = new Uri(_configuration.FuntionBaseUrl)
             };
-            
+
+            var reserveList = new List<ReserveItem>();
+            foreach (var orderItem in orderItems)
+            {
+                reserveList.Add(new ReserveItem()
+                {
+                    ItemId = orderItem.ItemOrdered.CatalogItemId,
+                    Quantity = orderItem.Units
+                });
+            }
             httpClient.DefaultRequestHeaders.Add("x-functions-key", _configuration.FunctionKey);
-            await httpClient.PostAsync("reserveorder", JsonContent.Create(JsonConvert.SerializeObject(orderItems)));
+            await httpClient.PostAsync("reserveorder", JsonContent.Create(reserveList));
+        }
+
+        class ReserveItem
+        {
+            public int ItemId { get; set; }
+            public int Quantity { get; set; }
         }
     }
 }
