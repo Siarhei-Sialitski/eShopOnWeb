@@ -19,7 +19,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Rewrite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.eShopWeb.ApplicationCore;
 using Microsoft.eShopWeb.ApplicationCore.Interfaces;
+using Microsoft.eShopWeb.ApplicationCore.Services;
 using Microsoft.eShopWeb.Infrastructure.Data;
 using Microsoft.eShopWeb.Infrastructure.Identity;
 using Microsoft.eShopWeb.Web.Configuration;
@@ -98,7 +100,7 @@ namespace Microsoft.eShopWeb.Web
         {
             
             services.AddCookieSettings();
-
+            services.AddScoped<IOrderReserverService, OrderReserverService>();
 
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
                 .AddCookie(options =>
@@ -145,7 +147,9 @@ namespace Microsoft.eShopWeb.Web
 
                 config.Path = "/allservices";
             });
-
+            var orderReserverConfiguration = new OrderReserverConfiguration();
+            Configuration.Bind(OrderReserverConfiguration.CONFIG_NAME, orderReserverConfiguration);
+            services.AddScoped<OrderReserverConfiguration>(sp => orderReserverConfiguration);
             
             var baseUrlConfig = new BaseUrlConfiguration();
             Configuration.Bind(BaseUrlConfiguration.CONFIG_NAME, baseUrlConfig);
