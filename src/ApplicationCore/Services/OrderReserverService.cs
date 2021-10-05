@@ -28,7 +28,7 @@ namespace Microsoft.eShopWeb.ApplicationCore.Services
             };
             
             httpClient.DefaultRequestHeaders.Add("x-functions-key", _configuration.FunctionKey);
-            await httpClient.PostAsync("CreateOrder", JsonContent.Create(orderItems));
+            await httpClient.PostAsync("reserveorder", JsonContent.Create(orderItems));
         }
     }
 }
