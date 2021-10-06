@@ -1,13 +1,11 @@
-using System;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.Storage.Blob;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using Microsoft.Azure.Storage.Blob;
-using Newtonsoft.Json;
 
 namespace CreateOrder
 {
@@ -23,21 +21,10 @@ namespace CreateOrder
             
 
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-            dynamic data = JsonConvert.DeserializeObject(requestBody);
-            var orderInformation = data?.OrderInformation;
-
-            string responseMessage = String.Empty;
-
-            if (string.IsNullOrEmpty(Convert.ToString(orderInformation)))
-            {
-                responseMessage =
-                    "This HTTP triggered function executed successfully. Pass an order information in the request body to put data to blob.";
-            }
-            else
-            {
-                await outputBlob.UploadTextAsync(requestBody);
-                responseMessage = $"Order information was successfully reserved";
-            }
+            
+            await outputBlob.UploadTextAsync(requestBody);
+            var responseMessage = $"Order information was successfully reserved";
+            log.LogInformation($"Order reserved: {requestBody}");
 
             return new OkObjectResult(responseMessage);
         }
