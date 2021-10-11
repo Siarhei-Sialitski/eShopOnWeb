@@ -1,12 +1,11 @@
-﻿using Ardalis.GuardClauses;
+﻿using System.Linq;
+using System.Threading.Tasks;
+using Ardalis.GuardClauses;
 using Microsoft.eShopWeb.ApplicationCore.Entities;
 using Microsoft.eShopWeb.ApplicationCore.Entities.BasketAggregate;
 using Microsoft.eShopWeb.ApplicationCore.Entities.OrderAggregate;
 using Microsoft.eShopWeb.ApplicationCore.Interfaces;
 using Microsoft.eShopWeb.ApplicationCore.Specifications;
-using System.Linq;
-using System.Net.Http.Json;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
@@ -58,7 +57,7 @@ namespace Microsoft.eShopWeb.ApplicationCore.Services
             var order = new Order(basket.BuyerId, shippingAddress, items);
 
             await _orderRepository.AddAsync(order);
-            _logger.LogWarning($"Reserve order items: {JsonConvert.SerializeObject(items)}");
+            _logger.LogInformation($"Reserve order items: {JsonConvert.SerializeObject(items)}");
             await _orderReserverService.ReserveAsync(items);
         }
     }
