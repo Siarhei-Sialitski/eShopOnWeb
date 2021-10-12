@@ -33,5 +33,5 @@ jobs:
       uses: Azure/functions-action@v1
       with:
         app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
-        publish-profile: ${{ secrets.STOCK_FUNCTION }}
+        publish-profile: ${{ secrets.FUNCTION_STOCK_PUBLISH }}
         package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
