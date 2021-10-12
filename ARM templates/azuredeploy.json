@@ -235,6 +235,14 @@
             {
               "name": "webBase",
               "value": ""
+            },
+            {
+              "name":"OrderReserverConfig:FunctionBaseUrl",
+              "value": ""
+            },
+            {
+              "name":"OrderReserverConfig:FunctionKey",
+              "value": ""
             }
           ]
         },
