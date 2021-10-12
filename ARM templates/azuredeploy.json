@@ -183,7 +183,7 @@
           },
           "dependsOn": [
             "[resourceId('Microsoft.Sql/servers', concat(parameters('sqlServerName')))]"
-          ]
+          ]          
         },
         {
           "type": "databases",
@@ -197,6 +197,19 @@
           "dependsOn": [
             "[resourceId('Microsoft.Sql/servers', concat(parameters('sqlServerName')))]"
           ]
+        },
+        {
+          "apiVersion": "2021-02-01-preview",
+          "dependsOn": [
+            "[concat('Microsoft.Sql/servers/', parameters('sqlServerName'))]"
+          ],
+          "location": "[parameters('resourceLocation')]",
+          "name": "AllowAllWindowsAzureIps",
+          "properties": {
+            "startIpAddress": "0.0.0.0",
+            "endIpAddress": "0.0.0.0"
+        },
+          "type": "firewallrules"
         }
       ]
     },
@@ -273,11 +286,11 @@
           ],
           "appSettings": [
             {
-              "name": "webBase1",
+              "name": "baseUrls:webBase1",
               "value": ""
             },
             {
-              "name": "webBase2",
+              "name": "baseUrls:webBase2",
               "value": ""
             }
           ]
