@@ -24,7 +24,7 @@ namespace Microsoft.eShopWeb.ApplicationCore.Services
         {
             var httpClient = new HttpClient()
             {
-                BaseAddress = new Uri(_configuration.FuntionBaseUrl)
+                BaseAddress = new Uri(_configuration.FunctionBaseUrl)
             };
 
             var reserveList = new List<ReserveItem>();
