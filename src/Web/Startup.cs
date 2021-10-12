@@ -150,6 +150,10 @@ namespace Microsoft.eShopWeb.Web
             var orderReserverConfiguration = new OrderReserverConfiguration();
             Configuration.Bind(OrderReserverConfiguration.CONFIG_NAME, orderReserverConfiguration);
             services.AddScoped<OrderReserverConfiguration>(sp => orderReserverConfiguration);
+
+            var deliveryOrderConfiguration = new DeliveryOrderReserverConfiguration();
+            Configuration.Bind(DeliveryOrderReserverConfiguration.CONFIG_NAME, deliveryOrderConfiguration);
+            services.AddScoped<DeliveryOrderReserverConfiguration>(sp => deliveryOrderConfiguration);
             
             var baseUrlConfig = new BaseUrlConfiguration();
             Configuration.Bind(BaseUrlConfiguration.CONFIG_NAME, baseUrlConfig);
