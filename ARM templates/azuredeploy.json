@@ -406,32 +406,10 @@
             {
               "name": "FUNCTIONS_WORKER_RUNTIME",
               "value": "dotnet"
-            }
-          ]
-        }
-      }
-    },
-    {
-      "type": "Microsoft.Web/sites",
-      "apiVersion": "2020-06-01",
-      "name": "[parameters('deliveryFunctionAppName')]",
-      "location": "[parameters('resourceLocation')]",
-      "kind": "functionapp",
-      "dependsOn": [
-        "[resourceId('Microsoft.Web/serverfarms', parameters('functionAppServicePlanName'))]",
-        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName_var'))]"
-      ],
-      "properties": {
-        "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('functionAppServicePlanName'))]",
-        "siteConfig": {
-          "appSettings": [
+            },
             {
               "name": "CosmosDbConnectionString",
               "value": "[concat('AccountEndpoint=https://', variables('databaseAccountName_var'),'.documents.azure.com:443/;AccountKey=', listKeys(resourceId('Microsoft.DocumentDB/databaseAccounts', variables('databaseAccountName_var')), '2019-08-01').primaryMasterKey, ';')]"
-            },
-            {
-              "name": "FUNCTIONS_WORKER_RUNTIME",
-              "value": "dotnet"
             }
           ]
         }
