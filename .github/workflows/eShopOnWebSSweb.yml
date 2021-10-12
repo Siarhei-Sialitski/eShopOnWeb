@@ -1,12 +1,12 @@
-name: Build and deploy .NET Core app to Windows WebApp eShopOnWebSSweb
+name: Web build and deploy
 on:
   push:
     branches:
     - master
 env:
-  AZURE_WEBAPP_NAME: eShopOnWebSSweb
+  AZURE_WEBAPP_NAME: TestARMDeployment-webAppgkkfftcbp7nky
   AZURE_WEBAPP_PACKAGE_PATH: src\Web/publish
-  AZURE_WEBAPP_PUBLISH_PROFILE: ${{ secrets.eShopOnWebSSweb_6d32 }}
+  AZURE_WEBAPP_PUBLISH_PROFILE: ${{ secrets.WEB_PUBLISH }}
   CONFIGURATION: Release
   DOTNET_CORE_VERSION: 5.0.x
   WORKING_DIRECTORY: src\Web

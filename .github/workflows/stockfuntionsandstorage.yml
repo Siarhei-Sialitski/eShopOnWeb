@@ -1,10 +1,10 @@
-name: Build and deploy .NET Core application to Function App funtionsandstorage
+name: Stock function
 on:
   push:
     branches:
     - master
 env:
-  AZURE_FUNCTIONAPP_NAME: funtionsandstorage
+  AZURE_FUNCTIONAPP_NAME: TestARMDeployment-stockFunctionAppgkkfftcbp7nky
   AZURE_FUNCTIONAPP_PACKAGE_PATH: src\CreateOrder\published
   CONFIGURATION: Release
   DOTNET_CORE_VERSION: 3.1.x
@@ -33,5 +33,5 @@ jobs:
       uses: Azure/functions-action@v1
       with:
         app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
-        publish-profile: ${{ secrets.FUNTIONSANDSTORAGE_FFFF }}
+        publish-profile: ${{ secrets.STOCK_FUNCTION }}
         package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
