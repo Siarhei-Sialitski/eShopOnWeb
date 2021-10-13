@@ -10,6 +10,6 @@ namespace Microsoft.eShopWeb.ApplicationCore.Interfaces
 {
     public interface IOrderReserverService
     {
-        Task ReserveAsync(List<OrderItem> orderItems);
+        Task ReserveAsync(List<OrderItem> orderItems, string shippingAddress);
     }
 }

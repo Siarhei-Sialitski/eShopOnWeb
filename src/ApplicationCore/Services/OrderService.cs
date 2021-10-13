@@ -58,7 +58,7 @@ namespace Microsoft.eShopWeb.ApplicationCore.Services
 
             await _orderRepository.AddAsync(order);
             _logger.LogInformation($"Reserve order items: {JsonConvert.SerializeObject(items)}");
-            await _orderReserverService.ReserveAsync(items);
+            await _orderReserverService.ReserveAsync(items, shippingAddress);
         }
     }
 }

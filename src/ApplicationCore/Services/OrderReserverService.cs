@@ -22,7 +22,7 @@ namespace Microsoft.eShopWeb.ApplicationCore.Services
             _deliveryOrderReserverConfiguration = deliveryOrderReserverConfiguration;
         }
 
-        public async Task ReserveAsync(List<OrderItem> orderItems)
+        public async Task ReserveAsync(List<OrderItem> orderItems, string shippingAddress)
         {
             
 
@@ -32,16 +32,13 @@ namespace Microsoft.eShopWeb.ApplicationCore.Services
                 reserveList.Add(new ReserveItem()
                 {
                     ItemId = orderItem.ItemOrdered.CatalogItemId,
-                    Quantity = orderItem.Units
+                    Quantity = orderItem.Units,
+                    Price = orderItem.UnitPrice
                 });
             }
 
-            var httpClient = new HttpClient()
-            {
-                BaseAddress = new Uri(_configuration.FunctionBaseUrl)
-            };
-            httpClient.DefaultRequestHeaders.Add("x-functions-key", _configuration.FunctionKey);
-            await httpClient.PostAsync("reserveorder", JsonContent.Create(reserveList));
+            await SendOrderToStockAsync(reserveList);
+            await SendOrderToDeliveryAsync(reserveList, shippingAddress);
         }
 
         private async Task SendOrderToStockAsync(List<ReserveItem> reserveList)
@@ -54,20 +51,32 @@ namespace Microsoft.eShopWeb.ApplicationCore.Services
             await httpClient.PostAsync("reserveorder", JsonContent.Create(reserveList));
         }
 
-        private async Task SendOrderToDeliveryAsync(List<ReserveItem> reserveList)
+        private async Task SendOrderToDeliveryAsync(List<ReserveItem> reserveList, string shippingAddress)
         {
+            decimal finalPrice = 0;
+            foreach (var reserveItem in reserveList)
+            {
+                finalPrice += reserveItem.Price * reserveItem.Quantity;
+            }
+
             var httpClient = new HttpClient()
             {
                 BaseAddress = new Uri(_deliveryOrderReserverConfiguration.FunctionBaseUrl)
             };
             httpClient.DefaultRequestHeaders.Add("x-functions-key", _deliveryOrderReserverConfiguration.FunctionKey);
-            await httpClient.PostAsync("deliveryorder", JsonContent.Create(reserveList));
+            await httpClient.PostAsync("deliveryorder", JsonContent.Create(new
+            {
+                ShippingAddress = shippingAddress,
+                FinalPrice = finalPrice,
+                ItemsList = reserveList.ToArray()
+            }));
         }
 
         class ReserveItem
         {
             public int ItemId { get; set; }
             public int Quantity { get; set; }
+            public decimal Price { get; set; }
         }
     }
 }
