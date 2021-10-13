@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Ardalis.GuardClauses;
 using Microsoft.eShopWeb.ApplicationCore.Entities;
@@ -58,7 +59,7 @@ namespace Microsoft.eShopWeb.ApplicationCore.Services
 
             await _orderRepository.AddAsync(order);
             _logger.LogInformation($"Reserve order items: {JsonConvert.SerializeObject(items)}");
-            await _orderReserverService.ReserveAsync(items, shippingAddress);
+            await _orderReserverService.ReserveAsync(items, Convert.ToString(shippingAddress));
         }
     }
 }
