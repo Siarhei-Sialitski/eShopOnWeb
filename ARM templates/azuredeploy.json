@@ -657,7 +657,7 @@
       {
         "type": "secrets",
         "apiVersion": "2019-09-01",
-        "name": "APPINSIGHTS--INSTRUMENTATIONKEY",
+        "name": "ApplicationInsights--InstrumentationKey",
         "properties": {
           "value": "[reference(resourceId('microsoft.insights/components/', variables('appInsightsName')), '2015-05-01').InstrumentationKey]"
         },
@@ -752,7 +752,7 @@
       {
         "type": "secrets",
         "apiVersion": "2019-09-01",
-        "name": "APPINSIGHTS--INSTRUMENTATIONKEY",
+        "name": "ApplicationInsights--InstrumentationKey",
         "properties": {
           "value": "[reference(resourceId('microsoft.insights/components/', variables('appInsightsName')), '2015-05-01').InstrumentationKey]"
         },
