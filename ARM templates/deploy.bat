@@ -1,1 +1,1 @@
-az deployment group create --name blanktemplate --resource-group TestARMDeployment --template-file "azuredeploy.json" --parameters @azuredeploy.parameters.json
+az deployment group create --name blanktemplate --resource-group EShopOnWeb-SS --template-file "azuredeploy.json" --parameters @azuredeploy.parameters.json

@@ -2,12 +2,22 @@
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
+    "isNew": {
+      "type": "string",
+      "allowedValues": [
+        "y",
+        "n"
+      ],
+      "metadata": {
+        "description": "Is new deployment (y/n)"
+      }
+    },
     "resourceGroupName": {
       "type": "string",
       "defaultValue": "[resourceGroup().name]",
       "metadata": {
         "_parameterType": "resourceGroup",
-        "description": "Name of the resource group for the resource. It is recommended to put resources under same resource group for better tracking."
+        "description": "Name of the resource group for the resource."
       }
     },
     "resourceLocation": {
@@ -15,7 +25,7 @@
       "defaultValue": "[resourceGroup().location]",
       "metadata": {
         "_parameterType": "location",
-        "description": "Location of the resource. By default use resource group's location, unless the resource provider is not supported there."
+        "description": "Location of the resource."
       }
     }
     ,
@@ -37,7 +47,7 @@
     },
     "webAppName": {
       "type": "string",
-      "defaultValue": "[concat(parameters('resourceGroupName'),'-webApp', uniqueString(resourceGroup().id))]",
+      "defaultValue": "[concat(parameters('resourceGroupName'),'-webApp')]",
       "minLength": 2,
       "metadata": {
         "description": "Web app name."
@@ -45,7 +55,7 @@
     },
     "apiAppName": {
       "type": "string",
-      "defaultValue": "[concat(parameters('resourceGroupName'),'-apiApp', uniqueString(resourceGroup().id))]",
+      "defaultValue": "[concat(parameters('resourceGroupName'),'-apiApp')]",
       "minLength": 2,
       "metadata": {
         "description": "Api app name."
@@ -53,18 +63,18 @@
     },
     "stockFunctionAppName": {
       "type": "string",
-      "defaultValue": "[concat(parameters('resourceGroupName'),'-stockFunctionApp', uniqueString(resourceGroup().id))]",
+      "defaultValue": "[concat(parameters('resourceGroupName'),'-stockFunctionApp')]",
       "minLength": 2,
       "metadata": {
-        "description": "Function app name."
+        "description": "Stock function app name."
       }
     },
     "deliveryFunctionAppName": {
       "type": "string",
-      "defaultValue": "[concat(parameters('resourceGroupName'),'-deliveryFunctionApp', uniqueString(resourceGroup().id))]",
+      "defaultValue": "[concat(parameters('resourceGroupName'),'-deliveryFunctionApp')]",
       "minLength": 2,
       "metadata": {
-        "description": "Function app name."
+        "description": "Delivery function app name."
       }
     },
     "sku": {
@@ -87,16 +97,30 @@
         "description": "The language stack of the app."
       }
     },
+    "currentStack":{
+      "type": "string",
+      "defaultValue": "dotnet",
+      "metadata": {
+        "description": "Current stack"
+      }
+    },
+    "netFrameworkVersion": {
+      "type": "string",
+      "defaultValue": "v5.0",
+      "metadata": {
+        "descritpion": "DotNet framework version"
+      }
+    },
     "databaseAccountName": {
       "type": "string",
-      "defaultValue": "[format('cosmos-{0}', uniqueString(resourceGroup().name))]",
+      "defaultValue": "[concat(parameters('resourceGroupName'),'-cosmosAccount-ss')]",
       "metadata": {
         "description": "Cosmos DB account name"
       }
-    },
+    },    
     "storageAccountName": {
       "type": "string",
-      "defaultValue": "[format('blob-{0}', uniqueString(resourceGroup().name))]",
+      "defaultValue": "[concat(parameters('resourceGroupName'),'blobAccount')]",
       "metadata": {
         "description": "Blob account name"
       }
@@ -104,7 +128,7 @@
     "databaseName": {
       "type": "string",
       "metadata": {
-        "description": "The name for the Core (SQL) database"
+        "description": "Core (SQL) database name"
       }
     },
     "storageName": {
@@ -121,6 +145,7 @@
     },
     "sqlServerName": {
       "type": "string",
+      "defaultValue": "[concat(parameters('resourceGroupName'),'-sqlServer-ss')]",
       "metadata": {
         "description": "SQL Server name"
       }
@@ -136,33 +161,44 @@
       "metadata": {
         "description": "SQL Server Administrator password"
       }
+    },
+     "environments": {
+      "defaultValue": [
+        "Dev"
+      ],
+      "type": "array",
+      "metadata": {
+        "description": "Array with the names for the environment slots"
+      },
+      "maxLength": 19
     }
   },
   "variables": {
-    "configReference": {
-      ".net": {
-        "comments": ".Net app. No additional configuration needed."
-      },
-      "html": {
-        "comments": "HTML app. No additional configuration needed."
-      },
-      "php": {
-        "phpVersion": "7.4"
-      },
-      "node": {
-        "appSettings": [
-          {
-            "name": "WEBSITE_NODE_DEFAULT_VERSION",
-            "value": "12.15.0"
-          }
-        ]
+    "databaseAccountName_var": "[toLower(parameters('databaseAccountName'))]",
+    "storageAccountName_var": "[replace(toLower(parameters('storageAccountName')), '-', '')]",
+    "webAppkeyVaultName-Prod": "[toLower('WebSiteKeyVaultProd')]",
+    "apiAppkeyVaultName-Prod": "[toLower('ApiKeyVaultProd')]",
+    "stockFunctionAppKeyVaultName-Prod": "[toLower('StockFuncKeyVaultProd')]",
+    "deliveryFunctionAppKeyVaultName-Prod": "[toLower('DeliveryFuncKeyVaultProd')]",
+    "appInsightsName": "[concat(parameters('resourceGroupName'), '-ApplicationInsights')]",
+    "deliveryFunction": "DeliveryOrder",
+    "reserveOrderFunction": "ReserveOrder"
+  },
+  "resources": [
+    {
+      "comments": "Application Insights",
+      "apiVersion": "2015-05-01",
+      "name": "[variables('appInsightsName')]",
+      "type": "Microsoft.Insights/components",
+      "kind": "web",
+      "location": "[parameters('resourceLocation')]",      
+      "properties": {
+      "Application_Type": "web",
+      "ApplicationId": "[variables('appInsightsName')]"
       }
     },
-    "databaseAccountName_var": "[concat(toLower(parameters('databaseAccountName')), uniquestring(resourceGroup().id))]",
-    "storageAccountName_var": "[concat(toLower(parameters('storageAccountName')), uniquestring(resourceGroup().id))]"
-  },
-  "resources": [  
     {
+      "comments": "Sql Server",
       "type": "Microsoft.Sql/servers",
       "apiVersion": "2020-02-02-preview",
       "name": "[parameters('sqlServerName')]",
@@ -173,6 +209,7 @@
       },
       "resources": [
         {
+          "comments": "Catalog Database",
           "type": "databases",
           "apiVersion": "2020-08-01-preview",
           "name": "[concat(parameters('sqlServerName'), '-Catalog')]",
@@ -186,6 +223,7 @@
           ]          
         },
         {
+          "comments": "Identity Database",
           "type": "databases",
           "apiVersion": "2020-08-01-preview",
           "name": "[concat(parameters('sqlServerName'), '-Identity')]",
@@ -199,6 +237,7 @@
           ]
         },
         {
+          "comments": "Firewall Rules",
           "apiVersion": "2021-02-01-preview",
           "dependsOn": [
             "[concat('Microsoft.Sql/servers/', parameters('sqlServerName'))]"
@@ -214,6 +253,7 @@
       ]
     },
     {
+      "comments": "App Service Plan for Web and Api applications",
       "type": "Microsoft.Web/serverfarms",
       "apiVersion": "2020-06-01",
       "location": "[parameters('resourceLocation')]",
@@ -221,84 +261,73 @@
       "sku": {
         "name": "[parameters('sku')]"
       }
-     },
+    },
     {
+      "comments": "Web site web app",
       "type": "Microsoft.Web/sites",
       "apiVersion": "2020-06-01",
       "name": "[parameters('webAppName')]",
+      "identity": {
+        "type": "SystemAssigned"
+      },
       "location": "[parameters('resourceLocation')]",
       "dependsOn": [
-        "[resourceId('Microsoft.Web/serverfarms', parameters('appServicePlanName'))]"
+        "[resourceId('Microsoft.Web/serverfarms', parameters('appServicePlanName'))]",
+        "[resourceId('Microsoft.Insights/components', variables('appInsightsName'))]"
       ],
       "properties": {
-        "siteConfig": {
-          "connectionStrings": [
-            {
-              "name":"CatalogConnection",
-              "type": "SQLAzure",
-              "connectionString": "[concat('Server=tcp:',reference(parameters('sqlServerName')).fullyQualifiedDomainName,',1433;Initial Catalog=',concat(parameters('sqlServerName'), '-Catalog'),';Persist Security Info=False;User ID=',reference(parameters('sqlServerName')).administratorLogin,';Password=',parameters('sqlServerAdministratorPassword'),';MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;')]"
-            },
-            {
-              "name":"IdentityConnection",
-              "type": "SQLAzure",
-              "connectionString": "[concat('Server=tcp:',reference(parameters('sqlServerName')).fullyQualifiedDomainName,',1433;Initial Catalog=',concat(parameters('sqlServerName'), '-Identity'),';Persist Security Info=False;User ID=',reference(parameters('sqlServerName')).administratorLogin,';Password=',parameters('sqlServerAdministratorPassword'),';MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;')]"
-            }
-          ],
+        "siteConfig": {           
           "appSettings": [
             {
-              "name": "webBase",
-              "value": ""
-            },
-            {
-              "name":"OrderReserverConfig:FunctionBaseUrl",
-              "value": ""
-            },
-            {
-              "name":"OrderReserverConfig:FunctionKey",
-              "value": ""
+              "name": "keyVaultName",
+              "value": "[variables('webAppkeyVaultName-Prod')]"
             }
-          ]
+          ],
+          "metadata": [
+            {
+              "name": "CURRENT_STACK",
+              "value": "[parameters('currentStack')]"
+            }
+          ],
+          "netFrameworkVersion": "[parameters('netFrameworkVersion')]"
         },
         "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('appServicePlanName'))]"
       }
     },
     {
+      "comments": "Api web app",
       "type": "Microsoft.Web/sites",
       "apiVersion": "2020-06-01",
       "name": "[parameters('apiAppName')]",
+      "identity": {
+        "type": "SystemAssigned"
+      },
       "location": "[parameters('resourceLocation')]",
       "dependsOn": [
-        "[resourceId('Microsoft.Web/serverfarms', parameters('appServicePlanName'))]"
+        "[resourceId('Microsoft.Web/serverfarms', parameters('appServicePlanName'))]",
+        "[resourceId('Microsoft.Insights/components', variables('appInsightsName'))]"
       ],
       "properties": {
-        "siteConfig": {
-          "connectionStrings": [
-            {
-              "name":"CatalogConnection",
-              "type": "SQLAzure",
-              "connectionString": "[concat('Server=tcp:',reference(parameters('sqlServerName')).fullyQualifiedDomainName,',1433;Initial Catalog=',concat(parameters('sqlServerName'), '-Catalog'),';Persist Security Info=False;User ID=',reference(parameters('sqlServerName')).administratorLogin,';Password=',parameters('sqlServerAdministratorPassword'),';MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;')]"
-            },
-            {
-              "name":"IdentityConnection",
-              "type": "SQLAzure",
-              "connectionString": "[concat('Server=tcp:',reference(parameters('sqlServerName')).fullyQualifiedDomainName,',1433;Initial Catalog=',concat(parameters('sqlServerName'), '-Identity'),';Persist Security Info=False;User ID=',reference(parameters('sqlServerName')).administratorLogin,';Password=',parameters('sqlServerAdministratorPassword'),';MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;')]"
-            }
-          ],
+        "siteConfig": {          
           "appSettings": [
             {
-              "name": "baseUrls:webBase1",
-              "value": ""
-            },
-            {
-              "name": "baseUrls:webBase2",
-              "value": ""
+              "name": "keyVaultName",
+              "value": "[variables('apiAppkeyVaultName-Prod')]"
             }
-          ]
+          ],
+          "metadata": [
+            {
+              "name": "CURRENT_STACK",
+              "value": "[parameters('currentStack')]"
+            }
+          ],
+          "netFrameworkVersion": "[parameters('netFrameworkVersion')]"
         },
         "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('appServicePlanName'))]"
       }
-     },
+    },
     {
+      "comments": "Storage account",
       "type": "Microsoft.Storage/storageAccounts",
       "apiVersion": "2019-06-01",
       "name": "[variables('storageAccountName_var')]",
@@ -310,6 +339,7 @@
       "properties": {}
     },
     {
+      "comments": "Cosmos database account",
       "type": "Microsoft.DocumentDB/databaseAccounts",
       "apiVersion": "2021-04-15",
       "name": "[variables('databaseAccountName_var')]",
@@ -328,6 +358,7 @@
       }
     },
     {
+      "comments": "Cosmos database",
       "type": "Microsoft.DocumentDB/databaseAccounts/apis/databases",
       "name": "[concat(variables('databaseAccountName_var'), '/sql/', parameters('databaseName'))]",
       "apiVersion": "2016-03-31",
@@ -344,6 +375,7 @@
       }
     },
     {
+      "comments": "Cosmos database container",
       "type": "Microsoft.DocumentDb/databaseAccounts/apis/databases/containers",
       "name": "[concat(variables('databaseAccountName_var'), '/sql/', parameters('databaseName'), '/', parameters('containers')[copyIndex()].name)]",
       "copy": {
@@ -366,12 +398,13 @@
           }
         }
       }
-    },    
+    },  
     {
+      "comments": "App Service plan for function apps",
       "type": "Microsoft.Web/serverfarms",
       "apiVersion": "2020-06-01",
       "name": "[parameters('functionAppServicePlanName')]",
-      "location": "[parameters('resourceLocation')]",
+      "location": "[parameters('resourceLocation')]",      
       "sku": {
         "name": "Y1",
         "tier": "Dynamic"
@@ -382,69 +415,550 @@
       }
     },
     {
+      "comments": "Stock Function App",
       "type": "Microsoft.Web/sites",
       "apiVersion": "2020-06-01",
       "name": "[parameters('stockFunctionAppName')]",
+      "identity": {
+        "type": "SystemAssigned"
+      },
       "location": "[parameters('resourceLocation')]",
       "kind": "functionapp",
       "dependsOn": [
         "[resourceId('Microsoft.Web/serverfarms', parameters('functionAppServicePlanName'))]",
-        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName_var'))]"
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName_var'))]",
+        "[resourceId('Microsoft.Insights/components', variables('appInsightsName'))]"
       ],
       "properties": {
         "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('functionAppServicePlanName'))]",
         "siteConfig": {
           "appSettings": [
             {
-              "name": "AzureWebJobsStorage",
-              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName_var'), ';EndpointSuffix=', environment().suffixes.storage, ';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName_var')), '2019-06-01').keys[0].value)]"
-            },
-            {
-              "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
-              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName_var'), ';EndpointSuffix=', environment().suffixes.storage, ';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName_var')), '2019-06-01').keys[0].value)]"
-            },
-            {
-              "name": "FUNCTIONS_WORKER_RUNTIME",
-              "value": "dotnet"
-            },
-            {
-              "name": "CosmosDbConnectionString",
-              "value": "[concat('AccountEndpoint=https://', variables('databaseAccountName_var'),'.documents.azure.com:443/;AccountKey=', listKeys(resourceId('Microsoft.DocumentDB/databaseAccounts', variables('databaseAccountName_var')), '2019-08-01').primaryMasterKey, ';')]"
+              "name": "keyVaultName",
+              "value": "[variables('stockFunctionAppKeyVaultName-Prod')]"
             }
-          ]
+          ],
+          "netFrameworkVersion": "[parameters('netFrameworkVersion')]"
         }
       }
-    },
+    },    
     {
+      "comments": "Conditional reserver order function used to fill function key",
+      "condition": "[equals(parameters('isNew'), 'y')]",
+      "type": "Microsoft.Web/sites/functions",
+      "apiVersion": "2020-12-01",
+      "name": "[concat(parameters('stockFunctionAppName'), '/', variables('reserveOrderFunction'))]",
+      "properties": {
+        "config": {
+          "disabled": false,
+          "bindings": [
+            {
+              "name": "req",
+              "type": "httpTrigger",
+              "direction": "in",
+              "authLevel": "function",
+              "methods": [
+                "get"
+              ]
+            },
+            {
+              "name": "$return",
+              "type": "http",
+              "direction": "out"
+            }
+          ]
+        },
+        "files": {
+          "run.csx": "#r \"Newtonsoft.Json\"\r\n\r\nusing System.Net;\r\nusing Microsoft.AspNetCore.Mvc;\r\nusing Microsoft.Extensions.Primitives;\r\nusing Newtonsoft.Json;\r\n\r\npublic static async Task<IActionResult> Run(HttpRequest req, ILogger log)\r\n{\r\n      log.LogInformation(\"C# HTTP trigger function processed a request.\");\r\n\r\n    string name = req.Query[\"name\"];\r\n\r\n    string requestBody = await new StreamReader(req.Body).ReadToEndAsync();\r\n    dynamic data = JsonConvert.DeserializeObject(requestBody);\r\n    name = name ?? data?.name;\r\n\r\n    string responseMessage = string.IsNullOrEmpty(name)\r\n        ? \"This HTTP triggered function executed successfully. Pass a name in the query string or in the request body for a personalized response.\"\r\n                : $\"Hello, {name}. This HTTP triggered function executed successfully.\";\r\n\r\n            return new OkObjectResult(responseMessage);\r\n}"
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites', parameters('stockFunctionAppName'))]"
+      ]
+    },   
+    {
+      "comments": "Delivery Function App",
       "type": "Microsoft.Web/sites",
       "apiVersion": "2020-06-01",
       "name": "[parameters('deliveryFunctionAppName')]",
+      "identity": {
+        "type": "SystemAssigned"
+      },
       "location": "[parameters('resourceLocation')]",
       "kind": "functionapp",
       "dependsOn": [
         "[resourceId('Microsoft.Web/serverfarms', parameters('functionAppServicePlanName'))]",
-        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName_var'))]"
+        "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName_var'))]",
+        "[resourceId('Microsoft.Insights/components', variables('appInsightsName'))]"
       ],
       "properties": {
         "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('functionAppServicePlanName'))]",
         "siteConfig": {
           "appSettings": [
-            {
-              "name": "AzureWebJobsStorage",
-              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName_var'), ';EndpointSuffix=', environment().suffixes.storage, ';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName_var')), '2019-06-01').keys[0].value)]"
-            },
-            {
-              "name": "CosmosDbConnectionString",
-              "value": "[concat('AccountEndpoint=https://', variables('databaseAccountName_var'),'.documents.azure.com:443/;AccountKey=', listKeys(resourceId('Microsoft.DocumentDB/databaseAccounts', variables('databaseAccountName_var')), '2019-08-01').primaryMasterKey, ';')]"
-            },
-            {
-              "name": "FUNCTIONS_WORKER_RUNTIME",
-              "value": "dotnet"
+            {          
+              "name": "keyVaultName",
+              "value": "[variables('deliveryFunctionAppKeyVaultName-Prod')]"
             }
-          ]
+          ],
+          "netFrameworkVersion": "[parameters('netFrameworkVersion')]"
         }
       }
-    }
+    },       
+    {
+      "comments": "Conditional delivery function used to fill function key",
+      "condition": "[equals(parameters('isNew'), 'y')]",
+      "type": "Microsoft.Web/sites/functions",
+      "apiVersion": "2020-12-01",
+      "name": "[concat(parameters('deliveryFunctionAppName'), '/', variables('deliveryFunction'))]",
+      "properties": {
+        "config": {
+          "disabled": false,
+          "bindings": [
+            {
+              "name": "req",
+              "type": "httpTrigger",
+              "direction": "in",
+              "authLevel": "function",
+              "methods": [
+                "get"
+              ]
+            },
+            {
+              "name": "$return",
+              "type": "http",
+              "direction": "out"
+            }
+          ]
+        },
+        "files": {
+          "run.csx": "#r \"Newtonsoft.Json\"\r\n\r\nusing System.Net;\r\nusing Microsoft.AspNetCore.Mvc;\r\nusing Microsoft.Extensions.Primitives;\r\nusing Newtonsoft.Json;\r\n\r\npublic static async Task<IActionResult> Run(HttpRequest req, ILogger log)\r\n{\r\n      log.LogInformation(\"C# HTTP trigger function processed a request.\");\r\n\r\n    string name = req.Query[\"name\"];\r\n\r\n    string requestBody = await new StreamReader(req.Body).ReadToEndAsync();\r\n    dynamic data = JsonConvert.DeserializeObject(requestBody);\r\n    name = name ?? data?.name;\r\n\r\n    string responseMessage = string.IsNullOrEmpty(name)\r\n        ? \"This HTTP triggered function executed successfully. Pass a name in the query string or in the request body for a personalized response.\"\r\n                : $\"Hello, {name}. This HTTP triggered function executed successfully.\";\r\n\r\n            return new OkObjectResult(responseMessage);\r\n}"
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/sites', parameters('deliveryFunctionAppName'))]"
+      ]
+    },
+  {
+    "comments": "Web site web app KeyVault",
+    "name": "[variables('webAppkeyVaultName-Prod')]",
+    "type": "Microsoft.KeyVault/vaults",
+    "apiVersion": "2019-09-01",
+    "location": "[resourceGroup().location]",
+    "tags": {
+      "displayName": "[variables('webAppkeyVaultName-Prod')]"
+    },
+    "properties": {
+      "enabledForDeployment": true,
+      "enabledForTemplateDeployment": true,
+      "enabledForDiskEncryption": true,
+      "tenantId": "[subscription().tenantId]",
+      "accessPolicies": [
+        {
+          "tenantId": "[reference(resourceId('Microsoft.Web/sites', parameters('webAppName')), '2018-02-01', 'Full').identity.tenantId]",
+          "objectId": "[reference(resourceId('Microsoft.Web/sites', parameters('webAppName')), '2018-02-01', 'Full').identity.principalId]",
+          "permissions": {
+            "keys": [
+              "Get"
+            ],
+            "secrets": [
+              "List",
+              "Get"
+            ]
+          }
+        }
+      ],
+      "sku": {
+        "name": "standard",
+        "family": "A"
+      }
+    },
+    "resources": [
+      {
+        "type": "secrets",
+        "name": "ConnectionStrings--CatalogConnection",
+        "apiVersion": "2016-10-01",
+        "dependsOn": [
+          "[resourceId('Microsoft.KeyVault/vaults', variables('webAppkeyVaultName-Prod'))]",
+          "[resourceId('Microsoft.Sql/servers', concat(parameters('sqlServerName')))]"
+        ],
+        "properties": {
+          "value": "[concat('Server=tcp:',reference(parameters('sqlServerName')).fullyQualifiedDomainName,',1433;Initial Catalog=',concat(parameters('sqlServerName'), '-Catalog'),';Persist Security Info=False;User ID=',reference(parameters('sqlServerName')).administratorLogin,';Password=',parameters('sqlServerAdministratorPassword'),';MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;')]"
+        }
+      },
+      {
+        "type": "secrets",
+        "name": "ConnectionStrings--IdentityConnection",
+        "apiVersion": "2016-10-01",
+        "dependsOn": [
+          "[resourceId('Microsoft.KeyVault/vaults', variables('webAppkeyVaultName-Prod'))]",
+          "[resourceId('Microsoft.Sql/servers', concat(parameters('sqlServerName')))]"
+        ],
+        "properties": {
+          "value": "[concat('Server=tcp:',reference(parameters('sqlServerName')).fullyQualifiedDomainName,',1433;Initial Catalog=',concat(parameters('sqlServerName'), '-Identity'),';Persist Security Info=False;User ID=',reference(parameters('sqlServerName')).administratorLogin,';Password=',parameters('sqlServerAdministratorPassword'),';MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;')]"
+        }
+      },
+      {
+        "type": "secrets",
+        "name": "webBase",
+        "apiVersion": "2016-10-01",
+        "dependsOn": [
+          "[resourceId('Microsoft.KeyVault/vaults', variables('webAppkeyVaultName-Prod'))]"
+        ],
+        "properties": {
+          "value": "[reference(resourceId('Microsoft.Web/sites', parameters('webAppName')), '2018-02-01').hostnames[0]]"
+        }
+      },    
+      {
+        "type": "secrets",
+        "name": "OrderReserverConfig--FunctionBaseUrl",
+        "apiVersion": "2016-10-01",
+        "dependsOn": [
+          "[resourceId('Microsoft.KeyVault/vaults', variables('webAppkeyVaultName-Prod'))]"
+        ],
+        "properties": {
+          "value": "[concat(reference(resourceId('Microsoft.Web/sites', parameters('stockFunctionAppName')), '2018-02-01').hostnames[0], '/api/')]"
+        }
+      },
+      {
+        "type": "secrets",
+        "apiVersion": "2019-09-01",
+        "name": "OrderReserverConfig--FunctionKey",
+        "properties": {
+          "value": "[listKeys(format('{0}/host/default', resourceId('Microsoft.Web/sites', parameters('stockFunctionAppName'))), '2020-12-01').functionKeys.default]"
+        },
+        "dependsOn": [
+          "[resourceId('Microsoft.Web/sites', parameters('stockFunctionAppName'))]",
+          "[resourceId('Microsoft.KeyVault/vaults', variables('webAppkeyVaultName-Prod'))]"
+        ]
+      },
+      {
+        "type": "secrets",
+        "name": "DeliveryOrderReserverConfiguration--FunctionBaseUrl",
+        "apiVersion": "2016-10-01",
+        "dependsOn": [
+          "[resourceId('Microsoft.KeyVault/vaults', variables('webAppkeyVaultName-Prod'))]"
+        ],
+        "properties": {
+          "value": "[concat(reference(resourceId('Microsoft.Web/sites', parameters('deliveryFunctionAppName')), '2018-02-01').hostnames[0], '/api/')]"
+        }
+      },
+      {
+        "type": "secrets",
+        "apiVersion": "2019-09-01",
+        "name": "DeliveryOrderReserverConfiguration--FunctionKey",
+        "properties": {
+          "value": "[listKeys(format('{0}/host/default', resourceId('Microsoft.Web/sites', parameters('deliveryFunctionAppName'))), '2020-12-01').functionKeys.default]"
+        },
+        "dependsOn": [
+          "[resourceId('Microsoft.Web/sites', parameters('deliveryFunctionAppName'))]",
+          "[resourceId('Microsoft.KeyVault/vaults', variables('webAppkeyVaultName-Prod'))]"
+        ]
+      },
+      {
+        "type": "secrets",
+        "apiVersion": "2019-09-01",
+        "name": "APPINSIGHTS--INSTRUMENTATIONKEY",
+        "properties": {
+          "value": "[reference(resourceId('microsoft.insights/components/', variables('appInsightsName')), '2015-05-01').InstrumentationKey]"
+        },
+        "dependsOn": [
+          "[resourceId('Microsoft.Insights/Components', variables('appInsightsName'))]",
+          "[resourceId('Microsoft.KeyVault/vaults', variables('webAppkeyVaultName-Prod'))]"
+        ]
+      }
+    ]
+  },
+  {
+    "comments": "Api app KeyVault",
+    "name": "[variables('apiAppkeyVaultName-Prod')]",
+    "type": "Microsoft.KeyVault/vaults",
+    "apiVersion": "2019-09-01",
+    "location": "[resourceGroup().location]",
+    "tags": {
+      "displayName": "[variables('apiAppkeyVaultName-Prod')]"
+    },
+    "properties": {
+      "enabledForDeployment": true,
+      "enabledForTemplateDeployment": true,
+      "enabledForDiskEncryption": true,
+      "tenantId": "[subscription().tenantId]",
+      "accessPolicies": [        
+        {
+          "tenantId": "[reference(resourceId('Microsoft.Web/sites', parameters('apiAppName')), '2018-02-01', 'Full').identity.tenantId]",
+          "objectId": "[reference(resourceId('Microsoft.Web/sites', parameters('apiAppName')), '2018-02-01', 'Full').identity.principalId]",
+          "permissions": {
+            "keys": [
+              "Get"
+            ],
+            "secrets": [
+              "List",
+              "Get"
+            ]
+          }
+        }
+      ],
+      "sku": {
+        "name": "standard",
+        "family": "A"
+      }
+    },
+    "resources": [
+      {
+        "type": "secrets",
+        "name": "ConnectionStrings--CatalogConnection",
+        "apiVersion": "2016-10-01",
+        "dependsOn": [
+          "[resourceId('Microsoft.KeyVault/vaults', variables('apiAppkeyVaultName-Prod'))]",
+          "[resourceId('Microsoft.Sql/servers', concat(parameters('sqlServerName')))]"
+        ],
+        "properties": {
+          "value": "[concat('Server=tcp:',reference(parameters('sqlServerName')).fullyQualifiedDomainName,',1433;Initial Catalog=',concat(parameters('sqlServerName'), '-Catalog'),';Persist Security Info=False;User ID=',reference(parameters('sqlServerName')).administratorLogin,';Password=',parameters('sqlServerAdministratorPassword'),';MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;')]"
+        }
+      },
+      {
+        "type": "secrets",
+        "name": "ConnectionStrings--IdentityConnection",
+        "apiVersion": "2016-10-01",
+        "dependsOn": [
+          "[resourceId('Microsoft.KeyVault/vaults', variables('apiAppkeyVaultName-Prod'))]",
+          "[resourceId('Microsoft.Sql/servers', concat(parameters('sqlServerName')))]"
+        ],
+        "properties": {
+          "value": "[concat('Server=tcp:',reference(parameters('sqlServerName')).fullyQualifiedDomainName,',1433;Initial Catalog=',concat(parameters('sqlServerName'), '-Identity'),';Persist Security Info=False;User ID=',reference(parameters('sqlServerName')).administratorLogin,';Password=',parameters('sqlServerAdministratorPassword'),';MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;')]"
+        }
+      },
+      {
+        "type": "secrets",
+        "name": "baseUrls--webBase1",
+        "apiVersion": "2016-10-01",
+        "dependsOn": [
+          "[resourceId('Microsoft.KeyVault/vaults', variables('apiAppkeyVaultName-Prod'))]"
+        ],
+        "properties": {
+          "value": "[reference(resourceId('Microsoft.Web/sites', parameters('webAppName')), '2018-02-01').hostnames[0]]"
+        }
+      },
+      {
+        "type": "secrets",
+        "name": "baseUrls--webBase2",
+        "apiVersion": "2016-10-01",
+        "dependsOn": [
+          "[resourceId('Microsoft.KeyVault/vaults', variables('apiAppkeyVaultName-Prod'))]"
+        ],
+        "properties": {
+          "value": "[reference(resourceId('Microsoft.Web/sites', parameters('webAppName')), '2018-02-01').hostnames[0]]"
+        }
+      },
+      {
+        "type": "secrets",
+        "apiVersion": "2019-09-01",
+        "name": "APPINSIGHTS--INSTRUMENTATIONKEY",
+        "properties": {
+          "value": "[reference(resourceId('microsoft.insights/components/', variables('appInsightsName')), '2015-05-01').InstrumentationKey]"
+        },
+        "dependsOn": [
+          "[resourceId('Microsoft.Insights/Components', variables('appInsightsName'))]",
+          "[resourceId('Microsoft.KeyVault/vaults', variables('apiAppkeyVaultName-Prod'))]"
+        ]
+      }
+    ]
+  },
+  {
+    "comments": "Stock function app KeyVault",
+    "name": "[variables('stockFunctionAppKeyVaultName-Prod')]",
+    "type": "Microsoft.KeyVault/vaults",
+    "apiVersion": "2019-09-01",
+    "location": "[resourceGroup().location]",
+    "tags": {
+      "displayName": "[variables('stockFunctionAppKeyVaultName-Prod')]"
+    },
+    "properties": {
+      "enabledForDeployment": true,
+      "enabledForTemplateDeployment": true,
+      "enabledForDiskEncryption": true,
+      "tenantId": "[subscription().tenantId]",
+      "accessPolicies": [        
+        {
+          "tenantId": "[reference(resourceId('Microsoft.Web/sites', parameters('stockFunctionAppName')), '2018-02-01', 'Full').identity.tenantId]",
+          "objectId": "[reference(resourceId('Microsoft.Web/sites', parameters('stockFunctionAppName')), '2018-02-01', 'Full').identity.principalId]",
+          "permissions": {
+            "keys": [
+              "Get"
+            ],
+            "secrets": [
+              "List",
+              "Get"
+            ]
+          }
+        }
+      ],
+      "sku": {
+        "name": "standard",
+        "family": "A"
+      }
+    },
+    "resources": [
+      {
+        "type": "secrets",
+        "name": "AzureWebJobsStorage",
+        "apiVersion": "2016-10-01",
+        "dependsOn": [
+          "[resourceId('Microsoft.KeyVault/vaults', variables('stockFunctionAppKeyVaultName-Prod'))]"
+        ],
+        "properties": {
+          "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName_var'), ';EndpointSuffix=', environment().suffixes.storage, ';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName_var')), '2019-06-01').keys[0].value)]"
+        }
+      },      
+      {
+        "type": "secrets",
+        "name": "FUNCTIONS--WORKER--RUNTIME",
+        "apiVersion": "2016-10-01",
+        "dependsOn": [
+          "[resourceId('Microsoft.KeyVault/vaults', variables('stockFunctionAppKeyVaultName-Prod'))]"
+        ],
+        "properties": {
+          "value": "dotnet"
+        }
+      },
+      {
+        "type": "secrets",
+        "name": "WEBSITE--CONTENTAZUREFILECONNECTIONSTRING",
+        "apiVersion": "2016-10-01",
+        "dependsOn": [
+          "[resourceId('Microsoft.KeyVault/vaults', variables('stockFunctionAppKeyVaultName-Prod'))]"
+        ],
+        "properties": {
+          "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName_var'), ';EndpointSuffix=', environment().suffixes.storage, ';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName_var')), '2019-06-01').keys[0].value)]"
+        }
+      },
+      {
+        "type": "secrets",
+        "name": "WEBSITE--CONTENTSHARE",
+        "apiVersion": "2016-10-01",
+        "dependsOn": [
+          "[resourceId('Microsoft.KeyVault/vaults', variables('stockFunctionAppKeyVaultName-Prod'))]"
+        ],
+        "properties": {
+          "value": "[parameters('stockFunctionAppName')]"
+        }
+      },
+      {
+        "type": "secrets",
+        "apiVersion": "2019-09-01",
+        "name": "APPINSIGHTS--INSTRUMENTATIONKEY",
+        "properties": {
+          "value": "[reference(resourceId('microsoft.insights/components/', variables('appInsightsName')), '2015-05-01').InstrumentationKey]"
+        },
+        "dependsOn": [
+          "[resourceId('Microsoft.Insights/Components', variables('appInsightsName'))]",
+          "[resourceId('Microsoft.KeyVault/vaults', variables('stockFunctionAppKeyVaultName-Prod'))]"
+        ]
+      }
+    ]
+  },
+  {
+    "comments": "Delivery function app KeyVault",
+    "name": "[variables('deliveryFunctionAppKeyVaultName-Prod')]",
+    "type": "Microsoft.KeyVault/vaults",
+    "apiVersion": "2019-09-01",
+    "location": "[resourceGroup().location]",
+    "tags": {
+      "displayName": "[variables('deliveryFunctionAppKeyVaultName-Prod')]"
+    },
+    "properties": {
+      "enabledForDeployment": true,
+      "enabledForTemplateDeployment": true,
+      "enabledForDiskEncryption": true,
+      "tenantId": "[subscription().tenantId]",
+      "accessPolicies": [        
+        {
+          "tenantId": "[reference(resourceId('Microsoft.Web/sites', parameters('deliveryFunctionAppName')), '2018-02-01', 'Full').identity.tenantId]",
+          "objectId": "[reference(resourceId('Microsoft.Web/sites', parameters('deliveryFunctionAppName')), '2018-02-01', 'Full').identity.principalId]",
+          "permissions": {
+            "keys": [
+              "Get"
+            ],
+            "secrets": [
+              "List",
+              "Get"
+            ]
+          }
+        }
+      ],
+      "sku": {
+        "name": "standard",
+        "family": "A"
+      }
+    },
+    "resources": [
+      {
+        "type": "secrets",
+        "name": "AzureWebJobsStorage",
+        "apiVersion": "2016-10-01",
+        "dependsOn": [
+          "[resourceId('Microsoft.KeyVault/vaults', variables('deliveryFunctionAppKeyVaultName-Prod'))]"
+        ],
+        "properties": {
+          "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName_var'), ';EndpointSuffix=', environment().suffixes.storage, ';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName_var')), '2019-06-01').keys[0].value)]"
+        }
+      },
+      {
+        "type": "secrets",
+        "name": "CosmosDbConnectionString",
+        "apiVersion": "2016-10-01",
+        "dependsOn": [
+          "[resourceId('Microsoft.KeyVault/vaults', variables('deliveryFunctionAppKeyVaultName-Prod'))]"
+        ],
+        "properties": {
+          "value": "[concat('AccountEndpoint=https://', variables('databaseAccountName_var'),'.documents.azure.com:443/;AccountKey=', listKeys(resourceId('Microsoft.DocumentDB/databaseAccounts', variables('databaseAccountName_var')), '2019-08-01').primaryMasterKey, ';')]"
+        }
+      },
+      {
+        "type": "secrets",
+        "name": "FUNCTIONS--WORKER--RUNTIME",
+        "apiVersion": "2016-10-01",
+        "dependsOn": [
+          "[resourceId('Microsoft.KeyVault/vaults', variables('deliveryFunctionAppKeyVaultName-Prod'))]"
+        ],
+        "properties": {
+          "value": "dotnet"
+        }
+      },
+      {
+        "type": "secrets",
+        "name": "WEBSITE--CONTENTAZUREFILECONNECTIONSTRING",
+        "apiVersion": "2016-10-01",
+        "dependsOn": [
+          "[resourceId('Microsoft.KeyVault/vaults', variables('deliveryFunctionAppKeyVaultName-Prod'))]"
+        ],
+        "properties": {
+          "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName_var'), ';EndpointSuffix=', environment().suffixes.storage, ';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName_var')), '2019-06-01').keys[0].value)]"
+        }
+      },
+      {
+        "type": "secrets",
+        "name": "WEBSITE--CONTENTSHARE",
+        "apiVersion": "2016-10-01",
+        "dependsOn": [
+          "[resourceId('Microsoft.KeyVault/vaults', variables('deliveryFunctionAppKeyVaultName-Prod'))]"
+        ],
+        "properties": {
+          "value": "[parameters('stockFunctionAppName')]"
+        }
+      },
+      {
+        "type": "secrets",
+        "apiVersion": "2019-09-01",
+        "name": "APPINSIGHTS--INSTRUMENTATIONKEY",
+        "properties": {
+          "value": "[reference(resourceId('microsoft.insights/components/', variables('appInsightsName')), '2015-05-01').InstrumentationKey]"
+        },
+        "dependsOn": [
+          "[resourceId('Microsoft.Insights/Components', variables('appInsightsName'))]",
+          "[resourceId('Microsoft.KeyVault/vaults', variables('deliveryFunctionAppKeyVaultName-Prod'))]"
+        ]
+      }
+    ]
+  }
   ]
-
 }

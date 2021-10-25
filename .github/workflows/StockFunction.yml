@@ -4,7 +4,7 @@ on:
     branches:
     - master
 env:
-  AZURE_FUNCTIONAPP_NAME: TestARMDeployment-stockFunctionAppgkkfftcbp7nky
+  AZURE_FUNCTIONAPP_NAME: EShopOnWeb-SS-stockFunctionApp
   AZURE_FUNCTIONAPP_PACKAGE_PATH: src\CreateOrder\published
   CONFIGURATION: Release
   DOTNET_CORE_VERSION: 3.1.x
