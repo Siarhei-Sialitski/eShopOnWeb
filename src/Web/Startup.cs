@@ -19,12 +19,11 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Rewrite;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.eShopWeb.ApplicationCore;
 using Microsoft.eShopWeb.ApplicationCore.Interfaces;
-using Microsoft.eShopWeb.ApplicationCore.Services;
 using Microsoft.eShopWeb.Infrastructure.Data;
 using Microsoft.eShopWeb.Infrastructure.Identity;
 using Microsoft.eShopWeb.Web.Configuration;
+using Microsoft.eShopWeb.Web.OrderReserver;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -147,9 +146,9 @@ namespace Microsoft.eShopWeb.Web
 
                 config.Path = "/allservices";
             });
-            var orderReserverConfiguration = new OrderReserverConfiguration();
-            Configuration.Bind(OrderReserverConfiguration.CONFIG_NAME, orderReserverConfiguration);
-            services.AddScoped<OrderReserverConfiguration>(sp => orderReserverConfiguration);
+            var orderReserverConfiguration = new OrderItemsReserverConfiguration();
+            Configuration.Bind(OrderItemsReserverConfiguration.CONFIG_NAME, orderReserverConfiguration);
+            services.AddScoped<OrderItemsReserverConfiguration>(sp => orderReserverConfiguration);
 
             var deliveryOrderConfiguration = new DeliveryOrderReserverConfiguration();
             Configuration.Bind(DeliveryOrderReserverConfiguration.CONFIG_NAME, deliveryOrderConfiguration);

@@ -37,9 +37,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorAdmin", "src\BlazorAd
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorShared", "src\BlazorShared\BlazorShared.csproj", "{715CF7AF-A1EE-40A6-94A0-8DA3F3B2CAE9}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CreateOrder", "src\CreateOrder\CreateOrder.csproj", "{2DFEE1F3-5285-4A3D-BA6E-241682054CC3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OrderItemsReserver", "src\CreateOrder\OrderItemsReserver.csproj", "{2DFEE1F3-5285-4A3D-BA6E-241682054CC3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeliveryOrder", "src\DeliveryOrder\DeliveryOrder.csproj", "{6DEA2FB2-7401-414D-A201-53409B1B1D94}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeliveryOrder", "src\DeliveryOrder\DeliveryOrder.csproj", "{6DEA2FB2-7401-414D-A201-53409B1B1D94}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

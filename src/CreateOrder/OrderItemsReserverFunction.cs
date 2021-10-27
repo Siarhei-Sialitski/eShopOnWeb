@@ -1,28 +1,27 @@
 using System.IO;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Storage.Blob;
 using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
 
-namespace CreateOrder
+namespace OrderItemsReserver
 {
-    public static class ReserveOrderFunction
+    public static class OrderItemsReserverFunction
     {
         [FunctionName("ReserveOrder")]
         public static async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequest req,
+            //[HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequest req,
+            [ServiceBusTrigger("%QueueName%", Connection = "ServiceBusConnection")] string queueItem,
             [Blob("orders/{rand-guid}.json", FileAccess.ReadWrite, Connection = "AzureWebJobsStorage")] CloudBlockBlob outputBlob,
             ILogger log)
         {
-            log.LogInformation("C# HTTP trigger function processed a request.");
+            log.LogInformation("Service Bus trigger function processed a request.");
             
 
-            string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+            string requestBody = await new StreamReader(queueItem).ReadToEndAsync();
             
-            await outputBlob.UploadTextAsync(requestBody);
+            await outputBlob.UploadTextAsync(queueItem);
             var responseMessage = $"Order information was successfully reserved";
             log.LogInformation($"Order reserved: {requestBody}");
 

@@ -1,15 +1,13 @@
-﻿using Microsoft.Azure.Functions.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Configuration;
+﻿using System;
+using Azure.Extensions.AspNetCore.Configuration.Secrets;
 using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
-using Azure.Extensions.AspNetCore.Configuration.Secrets;
+using Microsoft.Azure.Functions.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
+using OrderItemsReserver;
 
-[assembly: FunctionsStartup(typeof(CreateOrder.Startup))]
-namespace CreateOrder
+[assembly: FunctionsStartup(typeof(Startup))]
+namespace OrderItemsReserver
 {
     public class Startup : FunctionsStartup
     {

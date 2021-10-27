@@ -1,31 +1,36 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Azure.ServiceBus;
 using Microsoft.eShopWeb.ApplicationCore.Entities.OrderAggregate;
 using Microsoft.eShopWeb.ApplicationCore.Interfaces;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
-namespace Microsoft.eShopWeb.ApplicationCore.Services
+namespace Microsoft.eShopWeb.Web.OrderReserver
 {
     public class OrderReserverService : IOrderReserverService
     {
-        private readonly OrderReserverConfiguration _configuration;
+        private readonly OrderItemsReserverConfiguration _orderItemsReserverConfiguration;
         private readonly DeliveryOrderReserverConfiguration _deliveryOrderReserverConfiguration;
+        private readonly ILogger<OrderReserverService> _logger;
+        private IQueueClient _orderItemsReserverQueueClient;
 
-        public OrderReserverService(OrderReserverConfiguration configuration, DeliveryOrderReserverConfiguration deliveryOrderReserverConfiguration)
+        public OrderReserverService(
+            OrderItemsReserverConfiguration orderItemsReserverConfiguration, 
+            DeliveryOrderReserverConfiguration deliveryOrderReserverConfiguration,
+            ILogger<OrderReserverService> _logger)
         {
-            _configuration = configuration;
+            _orderItemsReserverConfiguration = orderItemsReserverConfiguration;
             _deliveryOrderReserverConfiguration = deliveryOrderReserverConfiguration;
+            this._logger = _logger;
         }
 
         public async Task ReserveAsync(List<OrderItem> orderItems, string shippingAddress)
         {
-            
-
             var reserveList = new List<ReserveItem>();
             foreach (var orderItem in orderItems)
             {
@@ -37,18 +42,29 @@ namespace Microsoft.eShopWeb.ApplicationCore.Services
                 });
             }
 
-            await SendOrderToStockAsync(reserveList);
-            await SendOrderToDeliveryAsync(reserveList, shippingAddress);
+            await ReserverOrderItemsInWarehouse(reserveList);
+            //await SendOrderToDeliveryAsync(reserveList, shippingAddress);
         }
 
-        private async Task SendOrderToStockAsync(List<ReserveItem> reserveList)
+        private async Task ReserverOrderItemsInWarehouse(List<ReserveItem> reserveList)
         {
-            var httpClient = new HttpClient()
+            _orderItemsReserverQueueClient = new QueueClient(_orderItemsReserverConfiguration.ConnectionString, _orderItemsReserverConfiguration.QueueName);
+            try
             {
-                BaseAddress = new Uri(_configuration.FunctionBaseUrl)
-            };
-            httpClient.DefaultRequestHeaders.Add("x-functions-key", _configuration.FunctionKey);
-            await httpClient.PostAsync("reserveorder", JsonContent.Create(reserveList));
+                var messageBody = JsonConvert.SerializeObject(reserveList);
+                var message = new Message(Encoding.UTF8.GetBytes(messageBody));
+
+                _logger.LogWarning(messageBody);
+                
+                await _orderItemsReserverQueueClient.SendAsync(message);
+
+            }
+            catch (Exception exception)
+            {
+                _logger.LogError($"Logger during queue item sending. :: Exception: {exception.Message}");
+            }
+
+            await _orderItemsReserverQueueClient.CloseAsync();
         }
 
         private async Task SendOrderToDeliveryAsync(List<ReserveItem> reserveList, string shippingAddress)

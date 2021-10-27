@@ -455,41 +455,7 @@
           "netFrameworkVersion": "[parameters('netFrameworkVersion')]"
         }
       }
-    },    
-    {
-      "comments": "Conditional reserver order function used to fill function key",
-      "condition": "[equals(parameters('isNew'), 'y')]",
-      "type": "Microsoft.Web/sites/functions",
-      "apiVersion": "2020-12-01",
-      "name": "[concat(parameters('stockFunctionAppName'), '/', variables('reserveOrderFunction'))]",
-      "properties": {
-        "config": {
-          "disabled": false,
-          "bindings": [
-            {
-              "name": "req",
-              "type": "httpTrigger",
-              "direction": "in",
-              "authLevel": "function",
-              "methods": [
-                "get"
-              ]
-            },
-            {
-              "name": "$return",
-              "type": "http",
-              "direction": "out"
-            }
-          ]
-        },
-        "files": {
-          "run.csx": "#r \"Newtonsoft.Json\"\r\n\r\nusing System.Net;\r\nusing Microsoft.AspNetCore.Mvc;\r\nusing Microsoft.Extensions.Primitives;\r\nusing Newtonsoft.Json;\r\n\r\npublic static async Task<IActionResult> Run(HttpRequest req, ILogger log)\r\n{\r\n      log.LogInformation(\"C# HTTP trigger function processed a request.\");\r\n\r\n    string name = req.Query[\"name\"];\r\n\r\n    string requestBody = await new StreamReader(req.Body).ReadToEndAsync();\r\n    dynamic data = JsonConvert.DeserializeObject(requestBody);\r\n    name = name ?? data?.name;\r\n\r\n    string responseMessage = string.IsNullOrEmpty(name)\r\n        ? \"This HTTP triggered function executed successfully. Pass a name in the query string or in the request body for a personalized response.\"\r\n                : $\"Hello, {name}. This HTTP triggered function executed successfully.\";\r\n\r\n            return new OkObjectResult(responseMessage);\r\n}"
-        }
-      },
-      "dependsOn": [
-        "[resourceId('Microsoft.Web/sites', parameters('stockFunctionAppName'))]"
-      ]
-    },   
+    },     
     {
       "comments": "Delivery Function App",
       "type": "Microsoft.Web/sites",
@@ -564,6 +530,7 @@
       "properties": {}
     },
     {
+      "comments": "Order Items Queue",
       "type": "Microsoft.ServiceBus/namespaces/queues",
       "apiVersion": "2017-04-01",
       "name": "[format('{0}/{1}', parameters('serviceBusNamespaceName'), parameters('serviceBusQueueName'))]",
@@ -653,30 +620,7 @@
         "properties": {
           "value": "[reference(resourceId('Microsoft.Web/sites', parameters('webAppName')), '2018-02-01').hostnames[0]]"
         }
-      },    
-      {
-        "type": "secrets",
-        "name": "OrderReserverConfig--FunctionBaseUrl",
-        "apiVersion": "2016-10-01",
-        "dependsOn": [
-          "[resourceId('Microsoft.KeyVault/vaults', variables('webAppkeyVaultName-Prod'))]"
-        ],
-        "properties": {
-          "value": "[concat(reference(resourceId('Microsoft.Web/sites', parameters('stockFunctionAppName')), '2018-02-01').hostnames[0], '/api/')]"
-        }
-      },
-      {
-        "type": "secrets",
-        "apiVersion": "2019-09-01",
-        "name": "OrderReserverConfig--FunctionKey",
-        "properties": {
-          "value": "[listKeys(format('{0}/host/default', resourceId('Microsoft.Web/sites', parameters('stockFunctionAppName'))), '2020-12-01').functionKeys.default]"
-        },
-        "dependsOn": [
-          "[resourceId('Microsoft.Web/sites', parameters('stockFunctionAppName'))]",
-          "[resourceId('Microsoft.KeyVault/vaults', variables('webAppkeyVaultName-Prod'))]"
-        ]
-      },
+      },  
       {
         "type": "secrets",
         "name": "DeliveryOrderReserverConfiguration--FunctionBaseUrl",
@@ -709,6 +653,30 @@
         },
         "dependsOn": [
           "[resourceId('Microsoft.Insights/Components', variables('appInsightsName'))]",
+          "[resourceId('Microsoft.KeyVault/vaults', variables('webAppkeyVaultName-Prod'))]"
+        ]
+      },
+      {
+        "type": "secrets",
+        "apiVersion": "2019-09-01",
+        "name": "OrderItemsReserverConfig--ConnectionString",
+        "properties": {
+          "value": "[listKeys(resourceId('Microsoft.ServiceBus/namespaces/AuthorizationRules',parameters('serviceBusNamespaceName'),'RootManageSharedAccessKey'),'2015-08-01').primaryConnectionString]"
+        },
+        "dependsOn": [
+          "[resourceId('Microsoft.ServiceBus/namespaces', parameters('serviceBusNamespaceName'))]",
+          "[resourceId('Microsoft.KeyVault/vaults', variables('webAppkeyVaultName-Prod'))]"
+        ]
+      },
+      {
+        "type": "secrets",
+        "apiVersion": "2019-09-01",
+        "name": "OrderItemsReserverConfig--QueueName",
+        "properties": {
+          "value": "[parameters('serviceBusQueueName')]"
+        },
+        "dependsOn": [
+          "[resourceId('Microsoft.ServiceBus/namespaces/queues', parameters('serviceBusNamespaceName'), parameters('serviceBusQueueName'))]",
           "[resourceId('Microsoft.KeyVault/vaults', variables('webAppkeyVaultName-Prod'))]"
         ]
       }
@@ -891,13 +859,36 @@
       {
         "type": "secrets",
         "apiVersion": "2019-09-01",
-        "name": "APPINSIGHTS--INSTRUMENTATIONKEY",
+        "name": "ApplicationInsights--InstrumentationKey",
         "properties": {
           "value": "[reference(resourceId('microsoft.insights/components/', variables('appInsightsName')), '2015-05-01').InstrumentationKey]"
         },
         "dependsOn": [
           "[resourceId('Microsoft.Insights/Components', variables('appInsightsName'))]",
           "[resourceId('Microsoft.KeyVault/vaults', variables('stockFunctionAppKeyVaultName-Prod'))]"
+        ]
+      },{
+        "type": "secrets",
+        "apiVersion": "2019-09-01",
+        "name": "ServiceBusConnection",
+        "properties": {
+          "value": "[listKeys(resourceId('Microsoft.ServiceBus/namespaces/AuthorizationRules',parameters('serviceBusNamespaceName'),'RootManageSharedAccessKey'),'2015-08-01').primaryConnectionString]"
+        },
+        "dependsOn": [
+          "[resourceId('Microsoft.ServiceBus/namespaces', parameters('serviceBusNamespaceName'))]",
+          "[resourceId('Microsoft.KeyVault/vaults', variables('webAppkeyVaultName-Prod'))]"
+        ]
+      },
+      {
+        "type": "secrets",
+        "apiVersion": "2019-09-01",
+        "name": "QueueName",
+        "properties": {
+          "value": "[parameters('serviceBusQueueName')]"
+        },
+        "dependsOn": [
+          "[resourceId('Microsoft.ServiceBus/namespaces/queues', parameters('serviceBusNamespaceName'), parameters('serviceBusQueueName'))]",
+          "[resourceId('Microsoft.KeyVault/vaults', variables('webAppkeyVaultName-Prod'))]"
         ]
       }
     ]
@@ -995,7 +986,7 @@
       {
         "type": "secrets",
         "apiVersion": "2019-09-01",
-        "name": "APPINSIGHTS--INSTRUMENTATIONKEY",
+        "name": "ApplicationInsights--InstrumentationKey",
         "properties": {
           "value": "[reference(resourceId('microsoft.insights/components/', variables('appInsightsName')), '2015-05-01').InstrumentationKey]"
         },
