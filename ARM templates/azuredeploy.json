@@ -171,6 +171,20 @@
         "description": "Array with the names for the environment slots"
       },
       "maxLength": 19
+    },
+    "serviceBusNamespaceName": {
+      "type": "string",
+      "defaultValue": "[concat(parameters('resourceGroupName'),'-servicebusnamespace-ss')]",
+      "metadata": {
+        "description": "Service Bus Namespace name"
+      }
+    },
+    "serviceBusQueueName": {
+      "type": "string",
+      "defaultValue": "OrderItems",
+      "metadata": {
+        "description": "Service Bus Namespace name"
+      }
     }
   },
   "variables": {
@@ -536,6 +550,38 @@
       },
       "dependsOn": [
         "[resourceId('Microsoft.Web/sites', parameters('deliveryFunctionAppName'))]"
+      ]
+    },
+    {
+      "comments": "Service Bus Namespace",
+      "type": "Microsoft.ServiceBus/namespaces",
+      "apiVersion": "2017-04-01",
+      "name": "[parameters('serviceBusNamespaceName')]",
+      "location": "[parameters('resourceLocation')]",
+      "sku": {
+        "name": "Standard"
+      },
+      "properties": {}
+    },
+    {
+      "type": "Microsoft.ServiceBus/namespaces/queues",
+      "apiVersion": "2017-04-01",
+      "name": "[format('{0}/{1}', parameters('serviceBusNamespaceName'), parameters('serviceBusQueueName'))]",
+      "properties": {
+        "lockDuration": "PT5M",
+        "maxSizeInMegabytes": 1024,
+        "requiresDuplicateDetection": false,
+        "requiresSession": false,
+        "defaultMessageTimeToLive": "P10675199DT2H48M5.4775807S",
+        "deadLetteringOnMessageExpiration": false,
+        "duplicateDetectionHistoryTimeWindow": "PT10M",
+        "maxDeliveryCount": 10,
+        "autoDeleteOnIdle": "P10675199DT2H48M5.4775807S",
+        "enablePartitioning": false,
+        "enableExpress": false
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.ServiceBus/namespaces', parameters('serviceBusNamespaceName'))]"
       ]
     },
   {

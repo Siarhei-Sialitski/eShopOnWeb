@@ -48,7 +48,7 @@ namespace Microsoft.eShopWeb.Web
             Host.CreateDefaultBuilder(args)
                 .ConfigureAppConfiguration((context, config) =>
                 {
-                    //if (context.HostingEnvironment.IsProduction())
+                    if (context.HostingEnvironment.IsProduction())
                     {
                         var builtConfig = config.Build();
                         var secretClient = new SecretClient(
