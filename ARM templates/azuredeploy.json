@@ -483,6 +483,10 @@
             {
               "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
               "value": "[reference(resourceId('microsoft.insights/components/', variables('appInsightsName')), '2015-05-01').InstrumentationKey]"
+            },
+            {
+              "name": "LogicAppEndpoint",
+              "value": "https://prod-00.northcentralus.logic.azure.com:443/workflows/14541d2799834df293d4a81ce13c9b8b/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=m0lBa3Y7Tu_iI3N_rW_HJPyhrikO7Sy8J-lI5Zus5wU"
             }
           ],
           "netFrameworkVersion": "[parameters('netFrameworkVersion')]"
