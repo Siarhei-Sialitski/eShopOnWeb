@@ -18,7 +18,7 @@ namespace OrderItemsReserver
 
             await outputBlob.CreateIfNotExistsAsync();
             
-            string blobName = DateTime.Now.ToString("0:MM/dd/yyyy H:mm:ss");
+            string blobName = DateTime.Now.ToString("0:MM_dd_yyyy.H:mm:ss");
             var state = await outputBlob.UploadBlobAsync(blobName, BinaryData.FromString(myQueueItem));
             log.LogInformation($"Order reserved: {myQueueItem}");
         }
