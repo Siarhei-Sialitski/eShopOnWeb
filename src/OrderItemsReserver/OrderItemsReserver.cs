@@ -1,5 +1,4 @@
 using System;
-using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
 using Azure.Storage.Blobs;
@@ -19,7 +18,7 @@ namespace OrderItemsReserver
 
             await outputBlob.CreateIfNotExistsAsync();
             
-            string blobName = DateTime.Now.ToString(CultureInfo.InvariantCulture);
+            string blobName = DateTime.Now.ToString("0:MM/dd/yyyy H:mm:ss");
             var state = await outputBlob.UploadBlobAsync(blobName, BinaryData.FromString(myQueueItem));
             log.LogInformation($"Order reserved: {myQueueItem}");
         }
