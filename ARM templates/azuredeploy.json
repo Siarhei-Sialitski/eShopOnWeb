@@ -467,6 +467,14 @@
             {
               "name": "keyVaultName",
               "value": "[variables('stockFunctionAppKeyVaultName-Prod')]"
+            },
+            {
+              "name": "AzureWebJobsStorage",
+              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName_var'), ';EndpointSuffix=', environment().suffixes.storage, ';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName_var')), '2019-06-01').keys[0].value)]"
+            },
+            {
+              "name": "FUNCTIONS_WORKER_RUNTIME",
+              "value": "dotnet"
             }
           ],
           "netFrameworkVersion": "[parameters('netFrameworkVersion')]"
@@ -828,29 +836,7 @@
         "family": "A"
       }
     },
-    "resources": [
-      {
-        "type": "secrets",
-        "name": "AzureWebJobsStorage",
-        "apiVersion": "2016-10-01",
-        "dependsOn": [
-          "[resourceId('Microsoft.KeyVault/vaults', variables('stockFunctionAppKeyVaultName-Prod'))]"
-        ],
-        "properties": {
-          "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', variables('storageAccountName_var'), ';EndpointSuffix=', environment().suffixes.storage, ';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName_var')), '2019-06-01').keys[0].value)]"
-        }
-      },      
-      {
-        "type": "secrets",
-        "name": "FUNCTIONS--WORKER--RUNTIME",
-        "apiVersion": "2016-10-01",
-        "dependsOn": [
-          "[resourceId('Microsoft.KeyVault/vaults', variables('stockFunctionAppKeyVaultName-Prod'))]"
-        ],
-        "properties": {
-          "value": "dotnet"
-        }
-      },
+    "resources": [              
       {
         "type": "secrets",
         "name": "WEBSITE--CONTENTAZUREFILECONNECTIONSTRING",

@@ -20,8 +20,7 @@ namespace OrderItemsReserver
             await outputBlob.CreateIfNotExistsAsync();
             
             string blobName = DateTime.Now.ToString(CultureInfo.InvariantCulture);
-            await outputBlob.UploadBlobAsync(blobName, BinaryData.FromString(myQueueItem));
-
+            var state = await outputBlob.UploadBlobAsync(blobName, BinaryData.FromString(myQueueItem));
             log.LogInformation($"Order reserved: {myQueueItem}");
         }
     }
