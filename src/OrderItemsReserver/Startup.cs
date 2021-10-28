@@ -21,11 +21,12 @@ namespace OrderItemsReserver
         {
             var context = builder.GetContext();
             var configurationBuilder = builder.ConfigurationBuilder;
-            // Add the Key Vault:
-            var configuration = configurationBuilder.Build();
-            var keyVaultUri = $"https://{configuration["keyVaultName"]}.vault.azure.net/";
-            configurationBuilder.AddAzureKeyVault(new SecretClient(new Uri(keyVaultUri), new DefaultAzureCredential()), new KeyVaultSecretManager());
-
+            if (!context.EnvironmentName.Equals("Development"))
+            {
+                var configuration = configurationBuilder.Build();
+                var keyVaultUri = $"https://{configuration["keyVaultName"]}.vault.azure.net/";
+                configurationBuilder.AddAzureKeyVault(new SecretClient(new Uri(keyVaultUri), new DefaultAzureCredential()), new KeyVaultSecretManager());
+            }
             _configuration = configurationBuilder.Build();
         }
     }

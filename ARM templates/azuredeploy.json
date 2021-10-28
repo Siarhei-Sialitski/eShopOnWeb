@@ -185,6 +185,13 @@
       "metadata": {
         "description": "Service Bus Namespace name"
       }
+    },
+    "ordersContainerName": {
+      "type": "string",
+      "defaultValue": "orders",
+      "metadata": {
+        "description": "Order Items blob container name"
+      }
     }
   },
   "variables": {
@@ -350,7 +357,17 @@
         "name": "Standard_LRS"
       },
       "kind": "StorageV2",
-      "properties": {}
+      "properties": {},
+      "resources": [
+        {
+          "type": "blobServices/containers",
+          "apiVersion": "2019-06-01",
+          "name": "[concat('default/', parameters('ordersContainerName'))]",
+          "dependsOn": [
+            "[variables('storageAccountName_var')]"
+          ]
+        }
+      ]
     },
     {
       "comments": "Cosmos database account",
