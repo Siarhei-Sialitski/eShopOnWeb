@@ -29,8 +29,7 @@ namespace OrderItemsReserver
                 await policy.Execute(async () =>
                 {
                     await outputBlob.CreateIfNotExistsAsync();
-
-                    throw new Exception("Manual exception");
+                    
                     string blobName = DateTime.Now.ToString("MM_dd_yyyy/H:mm:ss");
                     var state = await outputBlob.UploadBlobAsync(blobName, BinaryData.FromString(myQueueItem));
                     log.LogInformation($"Order reserved: {myQueueItem} under {blobName}");
@@ -39,7 +38,6 @@ namespace OrderItemsReserver
             }
             catch (Exception e)
             {
-                // Can't recover at this point
                 log.LogInformation($"critical error: {e.Message}");
                 var logicAppEndpoint = Environment.GetEnvironmentVariable("LogicAppEndpoint");
                 if (!string.IsNullOrEmpty(logicAppEndpoint))
