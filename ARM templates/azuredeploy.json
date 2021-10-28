@@ -867,7 +867,8 @@
           "[resourceId('Microsoft.Insights/Components', variables('appInsightsName'))]",
           "[resourceId('Microsoft.KeyVault/vaults', variables('stockFunctionAppKeyVaultName-Prod'))]"
         ]
-      },{
+      },
+      {
         "type": "secrets",
         "apiVersion": "2019-09-01",
         "name": "ServiceBusConnection",
@@ -876,7 +877,7 @@
         },
         "dependsOn": [
           "[resourceId('Microsoft.ServiceBus/namespaces', parameters('serviceBusNamespaceName'))]",
-          "[resourceId('Microsoft.KeyVault/vaults', variables('webAppkeyVaultName-Prod'))]"
+          "[resourceId('Microsoft.KeyVault/vaults', variables('stockFunctionAppKeyVaultName-Prod'))]"
         ]
       },
       {
@@ -888,7 +889,7 @@
         },
         "dependsOn": [
           "[resourceId('Microsoft.ServiceBus/namespaces/queues', parameters('serviceBusNamespaceName'), parameters('serviceBusQueueName'))]",
-          "[resourceId('Microsoft.KeyVault/vaults', variables('webAppkeyVaultName-Prod'))]"
+          "[resourceId('Microsoft.KeyVault/vaults', variables('stockFunctionAppKeyVaultName-Prod'))]"
         ]
       }
     ]
