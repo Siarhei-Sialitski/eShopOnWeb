@@ -5,9 +5,6 @@
         "databaseName": {
             "value": "DeliveryOrders"
         },
-        "storageName": {
-            "value":"OrdersStorage"
-        },
         "containers": {
             "value": [
               {
