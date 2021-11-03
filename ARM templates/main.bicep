@@ -1,32 +1,38 @@
 @description('Name of the resource group for the resource.')
 param resourceGroupName string = resourceGroup().name
 
+@description('Application name.')
+param application string
+
+@description('Environment name.')
+param environment string
+
 @description('Location of the resource.')
 param location string = resourceGroup().location
 
 @description('App service name.')
 @minLength(2)
-param appServicePlanName string = '${resourceGroupName}-appServicePlan'
+param appServicePlanName string = 'plan-applications-${environment}-${location}'
 
 @description('Function App service plan name.')
 @minLength(2)
-param functionAppServicePlanName string = '${resourceGroupName}-functionAppServicePlan'
+param functionAppServicePlanName string = 'plan-functions-${environment}-${location}'
 
 @description('Web app name.')
 @minLength(2)
-param webAppName string = '${resourceGroupName}-webApp'
+param webAppName string = 'app-website-${environment}-${location}'
 
 @description('Api app name.')
 @minLength(2)
-param apiAppName string = '${resourceGroupName}-apiApp'
+param apiAppName string = 'app-api-${environment}-${location}'
 
 @description('Stock function app name.')
 @minLength(2)
-param stockFunctionAppName string = '${resourceGroupName}-stockFunctionApp'
+param stockFunctionAppName string = 'func-stock-${environment}-${location}'
 
 @description('Delivery function app name.')
 @minLength(2)
-param deliveryFunctionAppName string = '${resourceGroupName}-deliveryFunctionApp'
+param deliveryFunctionAppName string = 'func-delivery-${environment}-${location}'
 
 @description('The SKU of App Service Plan.')
 param sku string = 'F1'
@@ -38,10 +44,10 @@ param currentStack string = 'dotnet'
 param netFrameworkVersion string = 'v5.0'
 
 @description('Cosmos DB account name')
-param databaseAccountName string = '${resourceGroupName}-cosmosAccount-ss'
+param databaseAccountName string = 'cosmos-account-${environment}-${location}'
 
 @description('Blob account name')
-param storageAccountName string = '${resourceGroupName}blobAccount'
+param storageAccountName string = 'st-account-${environment}-${location}'
 
 @description('Core (SQL) database name')
 param databaseName string = 'DeliveryOrders'
@@ -55,7 +61,7 @@ param containers array = [
 ]
 
 @description('SQL Server name')
-param sqlServerName string = '${resourceGroupName}-sqlServer-ss'
+param sqlServerName string = 'sql-applications-${environment}-${location}'
 
 @description('SQL Server Administrator name')
 param sqlServerAdministratorName string
@@ -64,19 +70,19 @@ param sqlServerAdministratorName string
 param sqlServerAdministratorPassword string
 
 @description('Service Bus Namespace name')
-param serviceBusNamespaceName string = '${resourceGroupName}-servicebusnamespace-ss'
+param serviceBusNamespaceName string = 'sb-stock-${environment}-${location}'
 
 @description('Service Bus Namespace name')
-param serviceBusQueueName string = 'OrderItems'
+param serviceBusQueueName string = 'sqb-orders--${environment}-${location}'
 
 @description('Order Items blob container name')
 param ordersContainerName string = 'orders'
 
 var databaseAccountNameFormatted = toLower(databaseAccountName)
-var storageAccountNameFormatted = replace(toLower(storageAccountName), '-', '')
-var webAppkeyVaultName = toLower('WebSiteKeyVaultProd')
-var apiAppkeyVaultName = toLower('ApiKeyVaultProd')
-var appInsightsName = '${resourceGroupName}-ApplicationInsights'
+var storageAccountNameFormatted = take(replace(toLower(storageAccountName), '-', ''), 24)
+var webAppkeyVaultName = 'kvwebsite${environment}${location}'
+var apiAppkeyVaultName = 'kvapi${environment}${location}'
+var appInsightsName = 'appi-${environment}-${location}'
 
 module util 'modules/util.bicep' = {
   name: 'util'

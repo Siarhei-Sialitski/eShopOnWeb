@@ -4,7 +4,7 @@ on:
     branches:
     - master
 env:
-  AZURE_WEBAPP_NAME: EShopOnWeb-SS-apiApp
+  AZURE_WEBAPP_NAME: app-api-prod-westeurope
   AZURE_WEBAPP_PACKAGE_PATH: src\PublicApi/publish
   AZURE_WEBAPP_PUBLISH_PROFILE: ${{ secrets.API_PUBLISH }}
   CONFIGURATION: Release

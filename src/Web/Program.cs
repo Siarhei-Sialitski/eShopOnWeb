@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Azure;
 using Azure.Extensions.AspNetCore.Configuration.Secrets;
 using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
@@ -48,14 +49,19 @@ namespace Microsoft.eShopWeb.Web
             Host.CreateDefaultBuilder(args)
                 .ConfigureAppConfiguration((context, config) =>
                 {
-                    if (context.HostingEnvironment.IsProduction())
+                    try
                     {
-                        var builtConfig = config.Build();
-                        var secretClient = new SecretClient(
-                            new Uri($"https://{builtConfig["keyVaultName"]}.vault.azure.net/"),
-                            new DefaultAzureCredential());
-                        config.AddAzureKeyVault(secretClient, new KeyVaultSecretManager());
+                        if (context.HostingEnvironment.IsProduction())
+                        {
+                            var builtConfig = config.Build();
+                            var secretClient = new SecretClient(
+                                new Uri($"https://{builtConfig["keyVaultName"]}.vault.azure.net/"),
+                                new DefaultAzureCredential());
+                            config.AddAzureKeyVault(secretClient, new KeyVaultSecretManager());
+                        }
                     }
+                    catch (RequestFailedException ex)
+                    {}
                 })
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
