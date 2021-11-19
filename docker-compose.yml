@@ -2,13 +2,28 @@ version: '3.4'
 
 services:
   eshopwebmvc:
-    image: ${DOCKER_REGISTRY-}eshopwebmvc
+    image: containerregistryess.azurecr.io/website:latest
     build:
       context: .
       dockerfile: src/Web/Dockerfile
+    environment:
+     - keyVaultName=kvwebsiteprodwesteurope
+     - ASPNETCORE_ENVIRONMENT=Docker
+     - ASPNETCORE_URLS=http://+:80
+     - baseUrls__ApiBase=eshoppublicapi:80
+    ports:
+     - "8000:80"
+    depends_on:
+     - eshoppublicapi
+
   eshoppublicapi:
-    image: ${DOCKER_REGISTRY-}eshoppublicapi
+    image: containerregistryess.azurecr.io/api:latest
     build:
       context: .
       dockerfile: src/PublicApi/Dockerfile
-
+    environment:
+     - keyVaultName=kvapiprodwesteurope
+     - ASPNETCORE_ENVIRONMENT=Docker
+     - ASPNETCORE_URLS=http://+:80
+    ports:
+     - "5200:80"
