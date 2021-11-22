@@ -1,3 +1,6 @@
+using System;
+using System.Net.Http;
+using System.Threading.Tasks;
 using BlazorAdmin.Services;
 using Blazored.LocalStorage;
 using BlazorShared;
@@ -6,9 +9,6 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Net.Http;
-using System.Threading.Tasks;
 
 namespace BlazorAdmin
 {
@@ -20,7 +20,8 @@ namespace BlazorAdmin
             builder.RootComponents.Add<App>("#admin");
 
             var baseUrlConfig = new BaseUrlConfiguration();
-            builder.Configuration.Bind(BaseUrlConfiguration.CONFIG_NAME, baseUrlConfig);
+            baseUrlConfig.ApiBase = builder.Configuration.GetSection("apiBase").Value;
+            baseUrlConfig.WebBase = builder.Configuration.GetSection("webBase").Value;
             builder.Services.AddScoped<BaseUrlConfiguration>(sp => baseUrlConfig);
 
             builder.Services.AddScoped(sp => new HttpClient() { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
