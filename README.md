@@ -1,4 +1,5 @@
 [![Build Status](https://github.com/dotnet-architecture/eShopOnWeb/workflows/eShopOnWeb%20Build%20and%20Test/badge.svg)](https://github.com/dotnet-architecture/eShopOnWeb/actions)
+[![Azure Apps deploy](https://github.com/Siarhei-Sialitski/eShopOnWeb/actions/workflows/azuredeployment.yml/badge.svg?branch=master)](https://github.com/Siarhei-Sialitski/eShopOnWeb/actions/workflows/azuredeployment.yml)
 
 # Microsoft eShopOnWeb ASP.NET Core Reference Application
 

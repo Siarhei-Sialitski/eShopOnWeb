@@ -36,14 +36,14 @@ public class Startup
 
     public IConfiguration Configuration { get; }
 
-    public void ConfigureDevelopmentServices(IServiceCollection services)
-    {
-        // use in-memory database
-        ConfigureInMemoryDatabases(services);
+        public void ConfigureDevelopmentServices(IServiceCollection services)
+        {
+            // use in-memory database
+            //ConfigureInMemoryDatabases(services);
 
-        // use real database
-        //ConfigureProductionServices(services);
-    }
+            // use real database
+            ConfigureProductionServices(services);
+        }
 
     public void ConfigureDockerServices(IServiceCollection services)
     {
@@ -82,12 +82,13 @@ public class Startup
     }
 
 
-    // This method gets called by the runtime. Use this method to add services to the container.
-    public void ConfigureServices(IServiceCollection services)
-    {
-        services.AddIdentity<ApplicationUser, IdentityRole>()
-                .AddEntityFrameworkStores<AppIdentityDbContext>()
-                .AddDefaultTokenProviders();
+        // This method gets called by the runtime. Use this method to add services to the container.
+        public void ConfigureServices(IServiceCollection services)
+        {
+            services.AddApplicationInsightsTelemetry();
+            services.AddIdentity<ApplicationUser, IdentityRole>()
+                    .AddEntityFrameworkStores<AppIdentityDbContext>()
+                    .AddDefaultTokenProviders();
 
         services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>));
         services.AddScoped(typeof(IReadRepository<>), typeof(EfRepository<>));
@@ -96,10 +97,9 @@ public class Startup
         services.AddScoped(typeof(IAppLogger<>), typeof(LoggerAdapter<>));
         services.AddScoped<ITokenClaimsService, IdentityTokenClaimService>();
 
-        var baseUrlConfig = new BaseUrlConfiguration();
-        Configuration.Bind(BaseUrlConfiguration.CONFIG_NAME, baseUrlConfig);
-
-        services.AddMemoryCache();
+            var webEndpointsConfiguration = new WebEndpointsConfiguration();
+            Configuration.Bind(WebEndpointsConfiguration.CONFIG_NAME, webEndpointsConfiguration); 
+            services.AddMemoryCache();
 
         var key = Encoding.ASCII.GetBytes(AuthorizationConstants.JWT_SECRET_KEY);
         services.AddAuthentication(config =>
@@ -119,16 +119,17 @@ public class Startup
             };
         });
 
-        services.AddCors(options =>
-        {
-            options.AddPolicy(name: CORS_POLICY,
-                              builder =>
-                              {
-                                  builder.WithOrigins(baseUrlConfig.WebBase.Replace("host.docker.internal", "localhost").TrimEnd('/'));
-                                  builder.AllowAnyMethod();
-                                  builder.AllowAnyHeader();
-                              });
-        });
+            services.AddCors(options =>
+            {
+                options.AddPolicy(name: CORS_POLICY,
+                                  builder =>
+                                  {
+                                      builder.WithOrigins(webEndpointsConfiguration.WebBase1.Replace("host.docker.internal", "localhost").TrimEnd('/'));
+                                      builder.WithOrigins(webEndpointsConfiguration.WebBase2.Replace("host.docker.internal", "localhost").TrimEnd('/'));
+                                      builder.AllowAnyMethod();
+                                      builder.AllowAnyHeader();
+                                  });
+            });
 
         services.AddControllers();
         services.AddMediatR(typeof(CatalogItem).Assembly);

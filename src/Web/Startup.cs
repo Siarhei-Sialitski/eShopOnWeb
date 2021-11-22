@@ -17,11 +17,13 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
+using Microsoft.AspNetCore.Rewrite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.eShopWeb.ApplicationCore.Interfaces;
 using Microsoft.eShopWeb.Infrastructure.Data;
 using Microsoft.eShopWeb.Infrastructure.Identity;
 using Microsoft.eShopWeb.Web.Configuration;
+using Microsoft.eShopWeb.Web.OrderReserver;
 using Microsoft.eShopWeb.Web.HealthChecks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -41,14 +43,14 @@ public class Startup
 
     public IConfiguration Configuration { get; }
 
-    public void ConfigureDevelopmentServices(IServiceCollection services)
-    {
-        // use in-memory database
-        ConfigureInMemoryDatabases(services);
+        public void ConfigureDevelopmentServices(IServiceCollection services)
+        {
+            // use in-memory database
+            //ConfigureInMemoryDatabases(services);
 
-        // use real database
-        //ConfigureProductionServices(services);
-    }
+            // use real database
+            ConfigureProductionServices(services);
+        }
 
     public void ConfigureDockerServices(IServiceCollection services)
     {
@@ -93,11 +95,12 @@ public class Startup
     }
 
 
-    // This method gets called by the runtime. Use this method to add services to the container.
-    public void ConfigureServices(IServiceCollection services)
-    {
-        services.AddCookieSettings();
-
+        // This method gets called by the runtime. Use this method to add services to the container.
+        public void ConfigureServices(IServiceCollection services)
+        {
+            services.AddApplicationInsightsTelemetry();
+            services.AddCookieSettings();
+            services.AddScoped<IOrderReserverService, OrderReserverService>();
 
         services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
             .AddCookie(options =>
@@ -145,18 +148,31 @@ public class Startup
         {
             config.Services = new List<ServiceDescriptor>(services);
 
-            config.Path = "/allservices";
-        });
+                config.Path = "/allservices";
+            });
+            var orderReserverConfiguration = new OrderItemsReserverConfiguration();
+            Configuration.Bind(OrderItemsReserverConfiguration.CONFIG_NAME, orderReserverConfiguration);
+            services.AddScoped<OrderItemsReserverConfiguration>(sp => orderReserverConfiguration);
 
-
-        var baseUrlConfig = new BaseUrlConfiguration();
-        Configuration.Bind(BaseUrlConfiguration.CONFIG_NAME, baseUrlConfig);
-        services.AddScoped<BaseUrlConfiguration>(sp => baseUrlConfig);
-        // Blazor Admin Required Services for Prerendering
-        services.AddScoped<HttpClient>(s => new HttpClient
-        {
-            BaseAddress = new Uri(baseUrlConfig.WebBase)
-        });
+            var deliveryOrderConfiguration = new DeliveryOrderReserverConfiguration();
+            Configuration.Bind(DeliveryOrderReserverConfiguration.CONFIG_NAME, deliveryOrderConfiguration);
+            services.AddScoped<DeliveryOrderReserverConfiguration>(sp => deliveryOrderConfiguration);
+            
+            var baseUrlConfig = new BaseUrlConfiguration();
+            Configuration.Bind(BaseUrlConfiguration.CONFIG_NAME, baseUrlConfig);
+            services.AddCors(o =>
+            {
+                o.AddDefaultPolicy(b =>
+                {
+                    b.WithOrigins(baseUrlConfig.ApiBase).AllowAnyMethod();
+                });
+            });
+            services.AddScoped<BaseUrlConfiguration>(sp => baseUrlConfig);
+            // Blazor Admin Required Services for Prerendering
+            services.AddScoped<HttpClient>(s => new HttpClient
+            {
+                BaseAddress = new Uri(baseUrlConfig.WebBase)
+            });
 
         // add blazor services
         services.AddBlazoredLocalStorage();
@@ -218,14 +234,16 @@ public class Startup
             app.UseHsts();
         }
 
-        app.UseHttpsRedirection();
-        app.UseBlazorFrameworkFiles();
-        app.UseStaticFiles();
-        app.UseRouting();
+            app.UseRewriter(new RewriteOptions().AddRewrite(@"^appsettings\.json$", "configuration", false));
+            app.UseHttpsRedirection();
+            app.UseBlazorFrameworkFiles();
+            app.UseStaticFiles();
+            app.UseRouting();
 
-        app.UseCookiePolicy();
-        app.UseAuthentication();
-        app.UseAuthorization();
+            app.UseCookiePolicy();
+            app.UseCors();
+            app.UseAuthentication();
+            app.UseAuthorization();
 
         app.UseEndpoints(endpoints =>
         {
