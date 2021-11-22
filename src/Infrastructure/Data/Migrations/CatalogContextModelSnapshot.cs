@@ -15,9 +15,9 @@ namespace Microsoft.eShopWeb.Infrastructure.Data.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .UseIdentityColumns()
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
-                .HasAnnotation("ProductVersion", "5.0.0");
+                .HasAnnotation("ProductVersion", "5.0.11")
+                .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
             modelBuilder.HasSequence("catalog_brand_hilo")
                 .IncrementsBy(10);
@@ -33,12 +33,12 @@ namespace Microsoft.eShopWeb.Infrastructure.Data.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
-                        .UseIdentityColumn();
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<string>("BuyerId")
                         .IsRequired()
-                        .HasMaxLength(40)
-                        .HasColumnType("nvarchar(40)");
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
                     b.HasKey("Id");
 
@@ -50,7 +50,7 @@ namespace Microsoft.eShopWeb.Infrastructure.Data.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
-                        .UseIdentityColumn();
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<int>("BasketId")
                         .HasColumnType("int");
@@ -76,7 +76,8 @@ namespace Microsoft.eShopWeb.Infrastructure.Data.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
-                        .UseHiLo("catalog_brand_hilo");
+                        .HasAnnotation("SqlServer:HiLoSequenceName", "catalog_brand_hilo")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.SequenceHiLo);
 
                     b.Property<string>("Brand")
                         .IsRequired()
@@ -93,7 +94,8 @@ namespace Microsoft.eShopWeb.Infrastructure.Data.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
-                        .UseHiLo("catalog_hilo");
+                        .HasAnnotation("SqlServer:HiLoSequenceName", "catalog_hilo")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.SequenceHiLo);
 
                     b.Property<int>("CatalogBrandId")
                         .HasColumnType("int");
@@ -129,7 +131,8 @@ namespace Microsoft.eShopWeb.Infrastructure.Data.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
-                        .UseHiLo("catalog_type_hilo");
+                        .HasAnnotation("SqlServer:HiLoSequenceName", "catalog_type_hilo")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.SequenceHiLo);
 
                     b.Property<string>("Type")
                         .IsRequired()
@@ -146,10 +149,12 @@ namespace Microsoft.eShopWeb.Infrastructure.Data.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
-                        .UseIdentityColumn();
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<string>("BuyerId")
-                        .HasColumnType("nvarchar(max)");
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
                     b.Property<DateTimeOffset>("OrderDate")
                         .HasColumnType("datetimeoffset");
@@ -164,7 +169,7 @@ namespace Microsoft.eShopWeb.Infrastructure.Data.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
-                        .UseIdentityColumn();
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<int?>("OrderId")
                         .HasColumnType("int");
@@ -217,7 +222,7 @@ namespace Microsoft.eShopWeb.Infrastructure.Data.Migrations
                             b1.Property<int>("OrderId")
                                 .ValueGeneratedOnAdd()
                                 .HasColumnType("int")
-                                .UseIdentityColumn();
+                                .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                             b1.Property<string>("City")
                                 .IsRequired()
@@ -265,7 +270,7 @@ namespace Microsoft.eShopWeb.Infrastructure.Data.Migrations
                             b1.Property<int>("OrderItemId")
                                 .ValueGeneratedOnAdd()
                                 .HasColumnType("int")
-                                .UseIdentityColumn();
+                                .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                             b1.Property<int>("CatalogItemId")
                                 .HasColumnType("int");

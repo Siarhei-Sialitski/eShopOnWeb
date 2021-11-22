@@ -1,0 +1,10 @@
+{
+    "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet",
+    "keyVaultName": "stockfunckeyvaultprod",
+    "QueueName": "orderitems",
+    "ServiceBusConnection": "Endpoint=sb://eshoponweb-ss-servicebusnamespace-ss.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=jkpX0zaimgqwPDMHmxsEk/N6/nrIiVE7+/bA338eZuM="
+  }
+}
