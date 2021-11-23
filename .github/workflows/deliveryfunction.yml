@@ -2,7 +2,7 @@ name: Delivery function
 on:
   push:
     branches:
-    - master
+    - 'main'
 env:
   AZURE_FUNCTIONAPP_NAME: func-delivery-prod-westeurope
   AZURE_FUNCTIONAPP_PACKAGE_PATH: src\DeliveryOrder\published

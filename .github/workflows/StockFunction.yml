@@ -2,7 +2,7 @@ name: Stock function
 on:
   push:
     branches:
-    - master
+    - 'main'
 env:
   AZURE_FUNCTIONAPP_NAME: func-stock-prod-westeurope
   AZURE_FUNCTIONAPP_PACKAGE_PATH: src\OrderItemsReserver\published
