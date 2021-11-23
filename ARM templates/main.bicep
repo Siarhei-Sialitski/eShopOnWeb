@@ -78,7 +78,7 @@ param sqlServerAdministratorPassword string
 param serviceBusNamespaceName string = 'sb-stock-${environment}-${location}'
 
 @description('Service Bus Namespace name')
-param serviceBusQueueName string = 'sqb-orders--${environment}-${location}'
+param serviceBusQueueName string = 'sbq-orders-${environment}-${location}'
 
 @description('Order Items blob container name')
 param ordersContainerName string = 'orders'
@@ -253,11 +253,11 @@ module webAppKeyVault 'modules/keyvault.bicep' = {
       }
       {
         name: 'DeliveryServiceConfiguration--FunctionBaseUrl'
-        value: ''
+        value: 'https://func-delivery-prod-westeurope.azurewebsites.net/api/'
       }
       {
         name: 'DeliveryServiceConfiguration--FunctionKey'
-        value: ''
+        value: 'DNH0yIflYfVjliNwcnxQKqMu4VJFiPgAR8340HDAPdGa4yrTqTQTfQ=='
       }
       {
         name: 'ApplicationInsights--InstrumentationKey'
