@@ -1,18 +1,19 @@
-@description('Name of the resource group for the resource.')
-param resourceGroupName string = resourceGroup().name
-
-@description('Application name.')
-param application string
-
 @description('Environment name.')
 param environment string
 
 @description('Location of the resource.')
 param location string = resourceGroup().location
 
+@description('Location of the secondary resource.')
+param secondaryLocation string = 'westus'
+
 @description('App service name.')
 @minLength(2)
 param appServicePlanName string = 'plan-applications-${environment}-${location}'
+
+@description('App service name.')
+@minLength(2)
+param appServicePlanSecondaryName string = 'plan-applications-${environment}-${secondaryLocation}'
 
 @description('Function App service plan name.')
 @minLength(2)
@@ -20,7 +21,11 @@ param functionAppServicePlanName string = 'plan-functions-${environment}-${locat
 
 @description('Web app name.')
 @minLength(2)
-param webAppName string = 'app-website-${environment}-${location}'
+param webAppPrimaryInstanceName string = 'app-website-${environment}-${location}'
+
+@description('Web app name.')
+@minLength(2)
+param webAppSecondaryInstanceName string = 'app-website-${environment}-${secondaryLocation}'
 
 @description('Api app name.')
 @minLength(2)
@@ -35,13 +40,13 @@ param stockFunctionAppName string = 'func-stock-${environment}-${location}'
 param deliveryFunctionAppName string = 'func-delivery-${environment}-${location}'
 
 @description('The SKU of App Service Plan.')
-param sku string = 'F1'
+param sku string = 'S1'
 
 @description('Current stack')
 param currentStack string = 'dotnet'
 
 @description('DotNet framework version')
-param netFrameworkVersion string = 'v5.0'
+param netFrameworkVersion string = 'v6.0'
 
 @description('Cosmos DB account name')
 param databaseAccountName string = 'cosmos-account-${environment}-${location}'
@@ -78,10 +83,19 @@ param serviceBusQueueName string = 'sqb-orders--${environment}-${location}'
 @description('Order Items blob container name')
 param ordersContainerName string = 'orders'
 
+@description('Container Registry Name')
+param containerRegistryName string = 'creshoponweb${environment}${location}'
+
+@description('Traffic Manager Name')
+param trafficManagerName string = 'traf-${environment}-${location}'
+
+@description('Traffic Manager Dns')
+param trafficManagerDns string = 'eshoponwebss'
+
 var databaseAccountNameFormatted = toLower(databaseAccountName)
 var storageAccountNameFormatted = take(replace(toLower(storageAccountName), '-', ''), 24)
-var webAppkeyVaultName = 'kvwebsite${environment}${location}'
-var apiAppkeyVaultName = 'kvapi${environment}${location}'
+var webAppkeyVaultName = 'kvwebeshop${environment}${location}'
+var apiAppkeyVaultName = 'kvapieshop${environment}${location}'
 var appInsightsName = 'appi-${environment}-${location}'
 
 module util 'modules/util.bicep' = {
@@ -102,18 +116,59 @@ module sqlServer 'modules/sqlserver.bicep' = {
   }
 }
 
-module appServices 'modules/applications.bicep' = {
-  name: 'appServices'
-  params: {
+module primaryServicePlan 'modules/serviceplan.bicep' = {
+  name: 'primaryServicePlan'
+  params:{
     location: location
+    sku: sku
     appServicePlanName: appServicePlanName
-    sku : sku
-    webAppName: webAppName 
-    apiAppName: apiAppName
-    webAppKeyVaultName: webAppkeyVaultName 
-    apiAppKeyVaultName: apiAppkeyVaultName
+    autoscaleEnabled: true
+  }
+}
+
+module secondaryServicePlan 'modules/serviceplan.bicep' = {
+  name: 'secondaryServicePlan'
+  params:{
+    location: secondaryLocation
+    sku: sku
+    appServicePlanName: appServicePlanSecondaryName
+    autoscaleEnabled: true
+  }
+}
+
+module webAppPrimaryInstanse 'modules/application.bicep' = {
+  name: 'webAppPrimaryInstance'
+  params: {
+    appKeyVaultName: webAppkeyVaultName
+    applicationStack: currentStack
+    appName: webAppPrimaryInstanceName
+    location: location
     netFrameworkVersion: netFrameworkVersion
-    applicationsStack: currentStack
+    servicePlanResourceId: primaryServicePlan.outputs.id
+  }
+}
+
+module webAppSecondaryInstanse 'modules/application.bicep' = {
+  name: 'webAppSecondaryInstance'
+  params: {
+    appKeyVaultName: webAppkeyVaultName
+    applicationStack: currentStack
+    appName: webAppSecondaryInstanceName
+    location: secondaryLocation
+    netFrameworkVersion: netFrameworkVersion
+    servicePlanResourceId: secondaryServicePlan.outputs.id
+  }
+}
+
+module apiAppInstanse 'modules/application.bicep' = {
+  name: 'apiAppInstanse'
+  params: {
+    appKeyVaultName: apiAppkeyVaultName
+    applicationStack: currentStack
+    appName: apiAppName
+    location: location
+    netFrameworkVersion: netFrameworkVersion
+    servicePlanResourceId: primaryServicePlan.outputs.id
   }
 }
 
@@ -160,11 +215,33 @@ module functions 'modules/functions.bicep' = {
   }
 }
 
+module containerRegistry 'modules/containerregistry.bicep' = {
+  name: 'containerRegistry'
+  params: {
+    location: location
+    acrName: containerRegistryName
+  }
+}
+
+module trafficManagerProfile 'modules/trafficmanager.bicep' = {
+  name: 'trafficMAnagerProfile'
+  params:{
+    secondaryWebAppId: webAppSecondaryInstanse.outputs.applicationId
+    secondaryEndpointName: 'secondary'
+    primaryEndpointName: 'primary'
+    uniqueDnsName: trafficManagerDns
+    trafficManagerName: trafficManagerName
+    primaryWebAppId: webAppPrimaryInstanse.outputs.applicationId
+  }
+}
+
 module webAppKeyVault 'modules/keyvault.bicep' = {
   name: 'webAppKeyVault'
   params: {
     location: location
     keyVaultName: webAppkeyVaultName
+    tenantId: webAppPrimaryInstanse.outputs.applicationTenantId
+    objectId: webAppPrimaryInstanse.outputs.applicationPrincipalId
     secrets: [
       {
         name: 'ConnectionStrings--CatalogConnection'
@@ -175,15 +252,11 @@ module webAppKeyVault 'modules/keyvault.bicep' = {
         value: sqlServer.outputs.identityDatabaseConnectionString
       }
       {
-        name: 'webBase'
-        value: appServices.outputs.webApplicationDefaultHostName
-      }
-      {
-        name: 'DeliveryOrderReserverConfiguration--FunctionBaseUrl'
+        name: 'DeliveryServiceConfiguration--FunctionBaseUrl'
         value: ''
       }
       {
-        name: 'DeliveryOrderReserverConfiguration--FunctionKey'
+        name: 'DeliveryServiceConfiguration--FunctionKey'
         value: ''
       }
       {
@@ -191,16 +264,21 @@ module webAppKeyVault 'modules/keyvault.bicep' = {
         value: util.outputs.appInsightsInstrumentationKey
       }
       {
-        name: 'OrderItemsReserverConfig--ConnectionString'
+        name: 'WarehouseServiceConfiguration--ConnectionString'
         value: serviceBus.outputs.serviceBusConnectionString
       }
       {
-        name: 'OrderItemsReserverConfig--QueueName'
+        name: 'WarehouseServiceConfiguration--QueueName'
         value: serviceBusQueueName
       }
     ]
-    principalId: appServices.outputs.webApplicationPrincipalId
-    tenantId: appServices.outputs.webApplicationTenantId
+    additionalPolicies: [
+      {
+        name: 'secondaryWebApp'
+        tenantId: webAppSecondaryInstanse.outputs.applicationTenantId
+        objectId: webAppSecondaryInstanse.outputs.applicationPrincipalId
+      }
+    ]
   }
 }
 
@@ -209,6 +287,8 @@ module apiAppKeyVault 'modules/keyvault.bicep' = {
   params: {
     location: location
     keyVaultName: apiAppkeyVaultName
+    tenantId:apiAppInstanse.outputs.applicationTenantId
+    objectId:apiAppInstanse.outputs.applicationPrincipalId
     secrets: [
       {
         name: 'ConnectionStrings--CatalogConnection'
@@ -220,18 +300,19 @@ module apiAppKeyVault 'modules/keyvault.bicep' = {
       }
       {
         name: 'baseUrls--webBase1'
-        value: appServices.outputs.webApplicationDefaultHostName
+        value: webAppPrimaryInstanse.outputs.applicationDefaultHostName
       }
       {
         name: 'baseUrls--webBase2'
-        value: appServices.outputs.webApplicationDefaultHostName
+        value: webAppSecondaryInstanse.outputs.applicationDefaultHostName
       }
       {
         name: 'ApplicationInsights--InstrumentationKey'
         value: util.outputs.appInsightsInstrumentationKey
       }
     ]
-    principalId: appServices.outputs.apiApplicationPrincipalId
-    tenantId: appServices.outputs.apiApplicationTenantId
+    additionalPolicies: [
+    ]
+    
   }
 }

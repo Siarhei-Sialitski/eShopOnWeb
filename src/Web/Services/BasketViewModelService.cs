@@ -22,9 +22,9 @@ public class BasketViewModelService : IBasketViewModelService
         IUriComposer uriComposer,
         IBasketQueryService basketQueryService)
     {
-        _basketRepository = basketRepository;
         _uriComposer = uriComposer;
         _basketQueryService = basketQueryService;
+        _basketRepository = basketRepository;
         _itemRepository = itemRepository;
     }
 

@@ -1,1 +1,1 @@
-az deployment group create --name blanktemplate --resource-group rg-eshoponeweb-prod-westeurope --template-file "main.bicep" --parameters @azuredeploy.parameters.json
+az deployment group create --name eshoponwebtemplate --resource-group rg-eshoponweb --template-file "main.bicep" --parameters @azuredeploy.parameters.json

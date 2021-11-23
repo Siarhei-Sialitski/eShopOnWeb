@@ -7,11 +7,14 @@ param keyVaultName string
 @description('List of secrets')
 param secrets array
 
-@description('Website Application Tenant Id.')
-param tenantId string
+@description('TenantId')
+param tenantId string 
 
-@description('Website Application Principal Id.')
-param principalId string
+@description('Object Id')
+param objectId string
+
+@description('List of additional policies')
+param additionalPolicies array
 
 
 resource keyVault 'Microsoft.KeyVault/vaults@2019-09-01' = {
@@ -28,7 +31,7 @@ resource keyVault 'Microsoft.KeyVault/vaults@2019-09-01' = {
     accessPolicies: [
       {
         tenantId: tenantId
-        objectId: principalId
+        objectId: objectId
         permissions: {
           keys: [
             'get'
@@ -46,6 +49,28 @@ resource keyVault 'Microsoft.KeyVault/vaults@2019-09-01' = {
     }
   }
 }
+
+resource accessPolicy 'Microsoft.KeyVault/vaults/accessPolicies@2019-09-01' = [for policy in additionalPolicies: {  
+  name: 'add'
+  parent: keyVault
+  properties: {
+    accessPolicies:[
+      {
+        tenantId: policy.tenantId
+        objectId: policy.objectId
+        permissions: {
+          keys: [
+          'get'
+          ]
+        secrets: [
+          'list'
+          'get'
+          ]
+        }  
+      }
+    ]
+  }
+}]
 
 resource keyVaultSecret 'Microsoft.KeyVault/vaults/secrets@2016-10-01' = [for secret in secrets: {
   parent: keyVault

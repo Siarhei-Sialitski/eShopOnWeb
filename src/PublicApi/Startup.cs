@@ -1,7 +1,5 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Text;
-using AutoMapper;
-using BlazorShared;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -15,7 +13,6 @@ using Microsoft.eShopWeb.ApplicationCore.Services;
 using Microsoft.eShopWeb.Infrastructure.Data;
 using Microsoft.eShopWeb.Infrastructure.Identity;
 using Microsoft.eShopWeb.Infrastructure.Logging;
-using Microsoft.eShopWeb.Infrastructure.Services;
 using Microsoft.eShopWeb.PublicApi.MiddleWares;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -36,14 +33,14 @@ public class Startup
 
     public IConfiguration Configuration { get; }
 
-        public void ConfigureDevelopmentServices(IServiceCollection services)
-        {
-            // use in-memory database
-            //ConfigureInMemoryDatabases(services);
+    public void ConfigureDevelopmentServices(IServiceCollection services)
+    {
+        // use in-memory database
+        //ConfigureInMemoryDatabases(services);
 
-            // use real database
-            ConfigureProductionServices(services);
-        }
+        // use real database
+        ConfigureProductionServices(services);
+    }
 
     public void ConfigureDockerServices(IServiceCollection services)
     {
@@ -82,13 +79,13 @@ public class Startup
     }
 
 
-        // This method gets called by the runtime. Use this method to add services to the container.
-        public void ConfigureServices(IServiceCollection services)
-        {
-            services.AddApplicationInsightsTelemetry();
-            services.AddIdentity<ApplicationUser, IdentityRole>()
-                    .AddEntityFrameworkStores<AppIdentityDbContext>()
-                    .AddDefaultTokenProviders();
+    // This method gets called by the runtime. Use this method to add services to the container.
+    public void ConfigureServices(IServiceCollection services)
+    {
+        services.AddApplicationInsightsTelemetry();
+        services.AddIdentity<ApplicationUser, IdentityRole>()
+                .AddEntityFrameworkStores<AppIdentityDbContext>()
+                .AddDefaultTokenProviders();
 
         services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>));
         services.AddScoped(typeof(IReadRepository<>), typeof(EfRepository<>));

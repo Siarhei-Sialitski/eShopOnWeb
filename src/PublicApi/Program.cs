@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using Azure;
 using Azure.Extensions.AspNetCore.Configuration.Secrets;
@@ -45,28 +45,27 @@ public class Program
         host.Run();
     }
 
-
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-                .ConfigureAppConfiguration((context, config) =>
+    public static IHostBuilder CreateHostBuilder(string[] args) =>
+        Host.CreateDefaultBuilder(args)
+            .ConfigureAppConfiguration((context, config) =>
+            {
+                try
                 {
-                    try
+                    if (context.HostingEnvironment.IsProduction())
                     {
-                        if (context.HostingEnvironment.IsProduction())
-                        {
-                            var builtConfig = config.Build();
-                            var secretClient = new SecretClient(
-                                new Uri($"https://{builtConfig["keyVaultName"]}.vault.azure.net/"),
-                                new DefaultAzureCredential());
-                            config.AddAzureKeyVault(secretClient, new KeyVaultSecretManager());
-                        }
+                        var builtConfig = config.Build();
+                        var secretClient = new SecretClient(
+                            new Uri($"https://{builtConfig["keyVaultName"]}.vault.azure.net/"),
+                            new DefaultAzureCredential());
+                        config.AddAzureKeyVault(secretClient, new KeyVaultSecretManager());
                     }
-                    catch (Exception ex)
-                    { }
-                })
-                .ConfigureWebHostDefaults(webBuilder =>
-                {
-                    webBuilder.UseStartup<Startup>();
-                });
-    }
+                }
+                catch (Exception)
+                { }
+            })
+            .ConfigureWebHostDefaults(webBuilder =>
+            {
+                webBuilder.UseStartup<Startup>();
+            });
+    
 }

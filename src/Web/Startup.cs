@@ -23,12 +23,14 @@ using Microsoft.eShopWeb.ApplicationCore.Interfaces;
 using Microsoft.eShopWeb.Infrastructure.Data;
 using Microsoft.eShopWeb.Infrastructure.Identity;
 using Microsoft.eShopWeb.Web.Configuration;
-using Microsoft.eShopWeb.Web.OrderReserver;
 using Microsoft.eShopWeb.Web.HealthChecks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
+using Microsoft.eShopWeb.Web.Services.WarehouseService;
+using Microsoft.eShopWeb.Web.Services.DeliveryService;
+using Microsoft.Extensions.Azure;
 
 namespace Microsoft.eShopWeb.Web;
 
@@ -43,14 +45,14 @@ public class Startup
 
     public IConfiguration Configuration { get; }
 
-        public void ConfigureDevelopmentServices(IServiceCollection services)
-        {
-            // use in-memory database
-            //ConfigureInMemoryDatabases(services);
+    public void ConfigureDevelopmentServices(IServiceCollection services)
+    {
+        // use in-memory database
+        //ConfigureInMemoryDatabases(services);
 
-            // use real database
-            ConfigureProductionServices(services);
-        }
+        // use real database
+        ConfigureProductionServices(services);
+    }
 
     public void ConfigureDockerServices(IServiceCollection services)
     {
@@ -94,13 +96,30 @@ public class Startup
         ConfigureInMemoryDatabases(services);
     }
 
-
-        // This method gets called by the runtime. Use this method to add services to the container.
-        public void ConfigureServices(IServiceCollection services)
+    // This method gets called by the runtime. Use this method to add services to the container.
+    public void ConfigureServices(IServiceCollection services)
+    {
+        var warehouseServiceConfiguration = new WarehouseServiceConfiguration();
+        Configuration.Bind(WarehouseServiceConfiguration.CONFIG_NAME, warehouseServiceConfiguration);
+        services.AddScoped(sp => warehouseServiceConfiguration);
+        services.AddAzureClients(builder =>
         {
-            services.AddApplicationInsightsTelemetry();
-            services.AddCookieSettings();
-            services.AddScoped<IOrderReserverService, OrderReserverService>();
+            builder.AddServiceBusClient(warehouseServiceConfiguration.ConnectionString);
+        });
+        services.AddScoped<IWarehouseService, WarehouseService>();
+
+        var deliveryService = new DeliveryServiceConfiguration();
+        Configuration.Bind(DeliveryServiceConfiguration.CONFIG_NAME, deliveryService);
+        services.AddScoped(sp => deliveryService);
+        services.AddHttpClient<IDeliveryService, DeliveryService>(client =>
+        {
+            client.BaseAddress = new Uri(deliveryService.FunctionBaseUrl);
+        });
+
+        services.AddApplicationInsightsTelemetry();
+        services.AddCookieSettings();
+        
+        
 
         services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
             .AddCookie(options =>
@@ -124,9 +143,9 @@ public class Startup
         services.AddMemoryCache();
         services.AddRouting(options =>
         {
-                // Replace the type and the name used to refer to it with your own
-                // IOutboundParameterTransformer implementation
-                options.ConstraintMap["slugify"] = typeof(SlugifyParameterTransformer);
+            // Replace the type and the name used to refer to it with your own
+            // IOutboundParameterTransformer implementation
+            options.ConstraintMap["slugify"] = typeof(SlugifyParameterTransformer);
         });
         services.AddMvc(options =>
         {
@@ -149,30 +168,23 @@ public class Startup
             config.Services = new List<ServiceDescriptor>(services);
 
                 config.Path = "/allservices";
-            });
-            var orderReserverConfiguration = new OrderItemsReserverConfiguration();
-            Configuration.Bind(OrderItemsReserverConfiguration.CONFIG_NAME, orderReserverConfiguration);
-            services.AddScoped<OrderItemsReserverConfiguration>(sp => orderReserverConfiguration);
-
-            var deliveryOrderConfiguration = new DeliveryOrderReserverConfiguration();
-            Configuration.Bind(DeliveryOrderReserverConfiguration.CONFIG_NAME, deliveryOrderConfiguration);
-            services.AddScoped<DeliveryOrderReserverConfiguration>(sp => deliveryOrderConfiguration);
+        });
             
-            var baseUrlConfig = new BaseUrlConfiguration();
-            Configuration.Bind(BaseUrlConfiguration.CONFIG_NAME, baseUrlConfig);
-            services.AddCors(o =>
+        var baseUrlConfig = new BaseUrlConfiguration();
+        Configuration.Bind(BaseUrlConfiguration.CONFIG_NAME, baseUrlConfig);
+        services.AddCors(o =>
+        {
+            o.AddDefaultPolicy(b =>
             {
-                o.AddDefaultPolicy(b =>
-                {
-                    b.WithOrigins(baseUrlConfig.ApiBase).AllowAnyMethod();
-                });
+                b.WithOrigins(baseUrlConfig.ApiBase).AllowAnyMethod();
             });
-            services.AddScoped<BaseUrlConfiguration>(sp => baseUrlConfig);
-            // Blazor Admin Required Services for Prerendering
-            services.AddScoped<HttpClient>(s => new HttpClient
-            {
-                BaseAddress = new Uri(baseUrlConfig.WebBase)
-            });
+        });
+        services.AddScoped<BaseUrlConfiguration>(sp => baseUrlConfig);
+        // Blazor Admin Required Services for Prerendering
+        services.AddScoped<HttpClient>(s => new HttpClient
+        {
+            BaseAddress = new Uri(baseUrlConfig.WebBase)
+        });
 
         // add blazor services
         services.AddBlazoredLocalStorage();
