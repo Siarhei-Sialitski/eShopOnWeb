@@ -251,14 +251,14 @@ module webAppKeyVault 'modules/keyvault.bicep' = {
         name: 'ConnectionStrings--IdentityConnection'
         value: sqlServer.outputs.identityDatabaseConnectionString
       }
-      {
-        name: 'DeliveryServiceConfiguration--FunctionBaseUrl'
-        value: 'https://func-delivery-prod-westeurope.azurewebsites.net/api/'
-      }
-      {
-        name: 'DeliveryServiceConfiguration--FunctionKey'
-        value: 'DNH0yIflYfVjliNwcnxQKqMu4VJFiPgAR8340HDAPdGa4yrTqTQTfQ=='
-      }
+      // {
+      //   name: 'DeliveryServiceConfiguration--FunctionBaseUrl'
+      //   value: 'https://func-delivery-prod-westeurope.azurewebsites.net/api/'
+      // }
+      // {
+      //   name: 'DeliveryServiceConfiguration--FunctionKey'
+      //   value: 'DNH0yIflYfVjliNwcnxQKqMu4VJFiPgAR8340HDAPdGa4yrTqTQTfQ=='
+      // }
       {
         name: 'ApplicationInsights--InstrumentationKey'
         value: util.outputs.appInsightsInstrumentationKey

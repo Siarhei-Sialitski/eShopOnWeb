@@ -14,6 +14,7 @@ public class OrderService : IOrderService
     private readonly IRepository<Order> _orderRepository;
     private readonly IUriComposer _uriComposer;
     private readonly IWarehouseService _warehouseService;
+    private readonly IDeliveryService _deliveryService;
     private readonly IRepository<Basket> _basketRepository;
     private readonly IRepository<CatalogItem> _itemRepository;
 
@@ -21,11 +22,13 @@ public class OrderService : IOrderService
         IRepository<CatalogItem> itemRepository,
         IRepository<Order> orderRepository,
         IUriComposer uriComposer,
-        IWarehouseService warehouseService)
+        IWarehouseService warehouseService,
+        IDeliveryService deliveryService)
     {
         _orderRepository = orderRepository;
         _uriComposer = uriComposer;
         _warehouseService = warehouseService;
+        _deliveryService = deliveryService;
         _basketRepository = basketRepository;
         _itemRepository = itemRepository;
     }
@@ -53,6 +56,7 @@ public class OrderService : IOrderService
 
         await _orderRepository.AddAsync(order);     
         await _warehouseService.ProcessOrderAsync(order);
+        await _deliveryService.ProcessOrderAsync(order);
     }
 
 }
