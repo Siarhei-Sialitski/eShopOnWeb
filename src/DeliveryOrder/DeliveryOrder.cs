@@ -16,7 +16,7 @@ namespace DeliveryOrder
             [CosmosDB(databaseName: "DeliveryOrders", collectionName: "orders", ConnectionStringSetting = "CosmosDbConnectionString")]IAsyncCollector<dynamic> documentsOut,
             ILogger log)
         {
-            log.LogInformation("--> Delivery Order Function");
+            log.LogWarning("--> Delivery Order Function");
             
 
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
@@ -29,8 +29,8 @@ namespace DeliveryOrder
             
             var responseMessage = $"Order information was successfully saved to delivery database.";
 
-            log.LogInformation("Order saved to delivery database: {requestBody}", requestBody);
-            log.LogInformation("<-- Delivery Order Function");
+            log.LogWarning("Order saved to delivery database: {requestBody}", requestBody);
+            log.LogWarning("<-- Delivery Order Function");
 
             return new OkObjectResult(responseMessage);
         }

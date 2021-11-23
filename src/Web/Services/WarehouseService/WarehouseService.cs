@@ -37,7 +37,7 @@ public class WarehouseService : IWarehouseService
                 Amount = item.Units
             });
         }
-        _logger.LogInformation("-->Reserve order items: {items}", JsonConvert.SerializeObject(warehouseItems));
+        _logger.LogWarning("-->Reserve order items: {items}", JsonConvert.SerializeObject(warehouseItems));
 
         await ReserveOrderItemsInWarehouse(warehouseItems);
     }

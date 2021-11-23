@@ -6,6 +6,7 @@ using Microsoft.eShopWeb.ApplicationCore.Interfaces;
 using Microsoft.eShopWeb.Web.Services.DeliveryService.Dtos;
 using Microsoft.eShopWeb.Web.Services.WarehouseService;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace Microsoft.eShopWeb.Web.Services.DeliveryService;
 
@@ -42,6 +43,9 @@ public class DeliveryService : IDeliveryService
                     Amount = item.Units
                 });
             }
+
+            _logger.LogWarning("-->Send order items to delivery: {items}", JsonConvert.SerializeObject(deliveryOrder));
+            _logger.LogWarning("-->Send order items to delivery baseurl : {items}", _httpClient.BaseAddress);
             _httpClient.DefaultRequestHeaders.Add("x-functions-key", _deliveryOrderReserverConfiguration.FunctionKey);
             await _httpClient.PostAsync("deliveryorder", JsonContent.Create(deliveryOrder));
         }
