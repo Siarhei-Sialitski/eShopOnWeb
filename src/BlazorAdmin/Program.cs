@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 using BlazorAdmin.Services;
@@ -20,10 +20,10 @@ public class Program
         var builder = WebAssemblyHostBuilder.CreateDefault(args);
         builder.RootComponents.Add<App>("#admin");
 
-            var baseUrlConfig = new BaseUrlConfiguration();
-            baseUrlConfig.ApiBase = builder.Configuration.GetSection("apiBase").Value;
-            baseUrlConfig.WebBase = builder.Configuration.GetSection("webBase").Value;
-            builder.Services.AddScoped<BaseUrlConfiguration>(sp => baseUrlConfig);
+        var baseUrlConfig = new BaseUrlConfiguration();
+        baseUrlConfig.ApiBase = builder.Configuration.GetSection("apiBase").Value;
+        baseUrlConfig.WebBase = builder.Configuration.GetSection("webBase").Value;
+        builder.Services.AddScoped<BaseUrlConfiguration>(sp => baseUrlConfig);
 
         builder.Services.AddScoped(sp => new HttpClient() { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 

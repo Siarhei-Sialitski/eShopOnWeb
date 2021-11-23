@@ -271,6 +271,14 @@ module webAppKeyVault 'modules/keyvault.bicep' = {
         name: 'WarehouseServiceConfiguration--QueueName'
         value: serviceBusQueueName
       }
+      {
+        name: 'baseUrls--WebBase'
+        value: trafficManagerProfile.outputs.fqdn
+      }
+      {
+        name: 'baseUrls--ApiBase'
+        value: apiAppInstanse.outputs.applicationDefaultHostName
+      }
     ]
     additionalPolicies: [
       {

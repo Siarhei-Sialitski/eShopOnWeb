@@ -63,3 +63,6 @@ resource trafficManagerProfile 'Microsoft.Network/trafficManagerProfiles@2018-08
     ]
   }
 }
+
+@description('Traffic manager FQDN')
+output fqdn string = trafficManagerProfile.properties.dnsConfig.fqdn
