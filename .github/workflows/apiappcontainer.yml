@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v2
@@ -24,6 +24,6 @@ jobs:
 
     - uses: azure/webapps-deploy@v2
       with:
-        app-name: 'dockercontainertest'
+        app-name: 'app-api-prod-westeurope'
         publish-profile: ${{ secrets.APIAPP_PUBLISH_PROFILE }}
         images: 'creshoponwebprodwesteurope.azurecr.io/apiapp:${{ github.sha }}'

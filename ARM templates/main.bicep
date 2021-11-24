@@ -15,6 +15,10 @@ param appServicePlanName string = 'plan-applications-${environment}-${location}'
 @minLength(2)
 param appServicePlanSecondaryName string = 'plan-applications-${environment}-${secondaryLocation}'
 
+@description('Api App service name.')
+@minLength(2)
+param apiAppServicePlanName string = 'plan-api-${environment}-${location}'
+
 @description('Function App service plan name.')
 @minLength(2)
 param functionAppServicePlanName string = 'plan-functions-${environment}-${location}'
@@ -136,6 +140,15 @@ module secondaryServicePlan 'modules/serviceplan.bicep' = {
   }
 }
 
+module linuxServicePlan 'modules/linuxserviceplan.bicep' = {
+  name: 'linuxServicePlan'
+  params:{
+    location: location
+    sku: 'F1'
+    appServicePlanName: apiAppServicePlanName
+  }
+}
+
 module webAppPrimaryInstanse 'modules/application.bicep' = {
   name: 'webAppPrimaryInstance'
   params: {
@@ -145,6 +158,7 @@ module webAppPrimaryInstanse 'modules/application.bicep' = {
     location: location
     netFrameworkVersion: netFrameworkVersion
     servicePlanResourceId: primaryServicePlan.outputs.id
+    kind: 'windows'
   }
 }
 
@@ -157,6 +171,7 @@ module webAppSecondaryInstanse 'modules/application.bicep' = {
     location: secondaryLocation
     netFrameworkVersion: netFrameworkVersion
     servicePlanResourceId: secondaryServicePlan.outputs.id
+    kind: 'windows'
   }
 }
 
@@ -168,7 +183,8 @@ module apiAppInstanse 'modules/application.bicep' = {
     appName: apiAppName
     location: location
     netFrameworkVersion: netFrameworkVersion
-    servicePlanResourceId: primaryServicePlan.outputs.id
+    servicePlanResourceId: linuxServicePlan.outputs.id
+    kind: 'app,linux,container'
   }
 }
 

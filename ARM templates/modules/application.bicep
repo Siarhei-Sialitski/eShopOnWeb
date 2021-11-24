@@ -4,6 +4,9 @@ param location string
 @description('Web Application Name.')
 param appName string
 
+@description('Application kind')
+param kind string
+
 @description('Web Application Key Vault Name.')
 param appKeyVaultName string
 
@@ -21,6 +24,7 @@ resource application 'Microsoft.Web/sites@2020-06-01' = {
   identity: {
     type: 'SystemAssigned'
   }
+  kind: kind
   location: location
   properties: {
     siteConfig: {
