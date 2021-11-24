@@ -172,7 +172,7 @@ public class Startup
             
         var baseUrlConfig = new BaseUrlConfiguration();
         Configuration.Bind(BaseUrlConfiguration.CONFIG_NAME, baseUrlConfig);
-        baseUrlConfig.ApiBase += "https://" + baseUrlConfig.ApiBase + "/api/";
+        baseUrlConfig.ApiBase = "https://" + baseUrlConfig.ApiBase + "/api/";
         services.AddCors(o =>
         {
             o.AddDefaultPolicy(b =>
