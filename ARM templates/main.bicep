@@ -75,6 +75,7 @@ param sqlServerName string = 'sql-applications-${environment}-${location}'
 @description('SQL Server Administrator name')
 param sqlServerAdministratorName string
 
+@secure()
 @description('SQL Server Administrator password')
 param sqlServerAdministratorPassword string
 
