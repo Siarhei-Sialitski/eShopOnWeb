@@ -21,37 +21,15 @@ param servicePlanResourceId string
 
 resource application 'Microsoft.Web/sites@2020-06-01' = {
   name: appName
+  kind: kind
   identity: {
     type: 'SystemAssigned'
   }
   location: location
   properties: {
     siteConfig: {
-      appSettings: [
-        {
-          name: 'keyVaultName'
-          value: appKeyVaultName
-        }
-        {
-          name: 'DOCKER_REGISTRY_SERVER_URL'
-          value: 'https://mcr.microsoft.com'
-        }
-        {
-          name: 'DOCKER_REGISTRY_SERVER_USERNAME'
-          value: ''
-        }
-        {
-          name: 'DOCKER_REGISTRY_SERVER_PASSWORD'
-          value: ''
-        }
-        {
-          name: 'WEBSITES_ENABLE_APP_SERVICE_STORAGE'
-          value: 'false'
-        }
-      ]
+      linuxFxVersion: 'DOCKER|nginx'
       appCommandLine: ''
-      netFrameworkVersion: netFrameworkVersion
-      windowsFxVersion: 'DOCKER|mcr.microsoft.com/azure-app-service/windows/parkingpage:latest'
     }
     serverFarmId: servicePlanResourceId
   }

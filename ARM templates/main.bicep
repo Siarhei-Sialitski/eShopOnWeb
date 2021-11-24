@@ -145,7 +145,7 @@ module linuxServicePlan 'modules/linuxserviceplan.bicep' = {
   name: 'linuxServicePlan'
   params:{
     location: location
-    sku: 'P1V3'
+    sku: 'B1'
     appServicePlanName: apiAppServicePlanName
   }
 }
@@ -185,7 +185,7 @@ module apiAppInstanse 'modules/containerapp.bicep' = {
     location: location
     netFrameworkVersion: netFrameworkVersion
     servicePlanResourceId: linuxServicePlan.outputs.id
-    kind: 'app,container,windows'
+    kind: 'app,linux,container'
   }
 }
 
@@ -237,6 +237,7 @@ module containerRegistry 'modules/containerregistry.bicep' = {
   params: {
     location: location
     acrName: containerRegistryName
+    acrAdminUserEnabled: true
   }
 }
 
