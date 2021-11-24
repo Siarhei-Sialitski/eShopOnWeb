@@ -1,71 +1,48 @@
-param subscriptionId string
-param name string
-param location string
-param hostingPlanName string
-param serverFarmResourceGroup string
-param alwaysOn bool
-param sku string
-param skuCode string
-param workerSize string
-param workerSizeId string
-param numberOfWorkers string
-param windowsFxVersion string
-param dockerRegistryUrl string
-param dockerRegistryUsername string
+var uniqueSuffix = toLower(uniqueString(resourceGroup().id))
+var appPlanName_var = 'demo-web-app-plan-${uniqueSuffix}'
+var appName_var = 'demo-web-app-${uniqueSuffix}'
+var registrySubscriptionId = 'CHANGETO-YOUR-SUBS-GUID-000000000000'
+var registryResourceGroup = 'container-registry-resource-group'
+var registryName = 'hompus'
+var registryResourceId = resourceId(registrySubscriptionId, registryResourceGroup, 'Microsoft.ContainerRegistry/registries', registryName)
 
-@secure()
-param dockerRegistryPassword string
-param dockerRegistryStartupCommand string
-
-resource name_resource 'Microsoft.Web/sites@2018-11-01' = {
-  name: name
-  location: location
-  properties: {
-    siteConfig: {
-      appSettings: [
-        {
-          name: 'DOCKER_REGISTRY_SERVER_URL'
-          value: dockerRegistryUrl
-        }
-        {
-          name: 'DOCKER_REGISTRY_SERVER_USERNAME'
-          value: dockerRegistryUsername
-        }
-        {
-          name: 'DOCKER_REGISTRY_SERVER_PASSWORD'
-          value: dockerRegistryPassword
-        }
-        {
-          name: 'WEBSITES_ENABLE_APP_SERVICE_STORAGE'
-          value: 'false'
-        }
-      ]
-      windowsFxVersion: windowsFxVersion
-      appCommandLine: dockerRegistryStartupCommand
-      alwaysOn: alwaysOn
-    }
-    serverFarmId: '/subscriptions/${subscriptionId}/resourcegroups/${serverFarmResourceGroup}/providers/Microsoft.Web/serverfarms/${hostingPlanName}'
-    clientAffinityEnabled: false
+resource appPlanName 'Microsoft.Web/serverfarms@2018-02-01' = {
+  name: appPlanName_var
+  location: resourceGroup().location
+  sku: {
+    name: 'B1'
+    tier: 'Basic'
   }
-  dependsOn: [
-    hostingPlanName_resource
-  ]
+  kind: 'linux'
+  properties: {
+    reserved: true
+  }
 }
 
-resource hostingPlanName_resource 'Microsoft.Web/serverfarms@2018-11-01' = {
-  name: hostingPlanName
-  location: location
-  kind: 'windows'
+resource appName 'Microsoft.Web/sites@2018-11-01' = {
+  name: appName_var
+  location: resourceGroup().location
+  kind: 'app,linux,container'
   properties: {
-    name: hostingPlanName
-    workerSize: workerSize
-    workerSizeId: workerSizeId
-    numberOfWorkers: numberOfWorkers
-    hyperV: true
+    serverFarmId: appPlanName.id
   }
-  sku: {
-    Tier: sku
-    Name: skuCode
+}
+
+resource appName_web 'Microsoft.Web/sites/config@2018-11-01' = {
+  parent: appName
+  name: 'web'
+  properties: {
+    linuxFxVersion: 'DOCKER|hompus.azurecr.io/samples/nginx:latest'
   }
-  dependsOn: []
+}
+
+resource appName_appsettings 'Microsoft.Web/sites/config@2018-11-01' = {
+  parent: appName
+  name: 'appsettings'
+  properties: {
+    DOCKER_REGISTRY_SERVER_URL: reference(registryResourceId, '2019-05-01').loginServer
+    DOCKER_REGISTRY_SERVER_USERNAME: listCredentials(registryResourceId, '2019-05-01').username
+    DOCKER_REGISTRY_SERVER_PASSWORD: listCredentials(registryResourceId, '2019-05-01').passwords[0].value
+    WEBSITES_ENABLE_APP_SERVICE_STORAGE: 'false'
+  }
 }

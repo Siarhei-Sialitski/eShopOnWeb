@@ -150,6 +150,17 @@ module linuxServicePlan 'modules/linuxserviceplan.bicep' = {
   }
 }
 
+
+module containerRegistry 'modules/containerregistry.bicep' = {
+  name: 'containerRegistry'
+  params: {
+    location: location
+    acrName: containerRegistryName
+    acrAdminUserEnabled: true
+    //servicePrincipalId: apiAppInstanse.outputs.applicationPrincipalId
+  }
+}
+
 module webAppPrimaryInstanse 'modules/application.bicep' = {
   name: 'webAppPrimaryInstance'
   params: {
@@ -184,6 +195,9 @@ module apiAppInstanse 'modules/containerapp.bicep' = {
     location: location
     servicePlanResourceId: linuxServicePlan.outputs.id
     kind: 'app,linux,container'
+    dockerRegistryUrl: containerRegistry.outputs.loginServer
+    dockerRegistryUserName: containerRegistry.outputs.username
+    dockerRegistryPasssword: containerRegistry.outputs.password
   }
 }
 
@@ -231,18 +245,8 @@ module functions 'modules/functions.bicep' = {
   }
 }
 
-module containerRegistry 'modules/containerregistry.bicep' = {
-  name: 'containerRegistry'
-  params: {
-    location: location
-    acrName: containerRegistryName
-    acrAdminUserEnabled: true
-    servicePrincipalId: apiAppInstanse.outputs.applicationPrincipalId
-  }
-}
-
 module trafficManagerProfile 'modules/trafficmanager.bicep' = {
-  name: 'trafficMAnagerProfile'
+  name: 'trafficManagerProfile'
   params:{
     secondaryWebAppId: webAppSecondaryInstanse.outputs.applicationId
     secondaryEndpointName: 'secondary'

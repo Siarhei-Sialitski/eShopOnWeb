@@ -13,6 +13,11 @@ param appKeyVaultName string
 @description('Service Plan Resoucre Id.')
 param servicePlanResourceId string
 
+param dockerRegistryPasssword string
+param dockerRegistryUrl string
+param dockerRegistryUserName string
+
+
 resource application 'Microsoft.Web/sites@2020-06-01' = {
   name: appName
   kind: kind
@@ -26,6 +31,18 @@ resource application 'Microsoft.Web/sites@2020-06-01' = {
         {
           name: 'keyVaultName'
           value: appKeyVaultName
+        }
+        {
+          name: 'DOCKER_REGISTRY_SERVER_PASSWORD'
+          value: dockerRegistryPasssword
+        }
+        {
+          name: 'DOCKER_REGISTRY_SERVER_URL'
+          value: dockerRegistryUrl
+        }
+        {
+          name: 'DOCKER_REGISTRY_SERVER_USERNAME'
+          value: dockerRegistryUserName
         }
       ]
       linuxFxVersion: 'DOCKER|nginx'
