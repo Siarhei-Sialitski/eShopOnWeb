@@ -8,10 +8,10 @@ using Microsoft.Extensions.Logging;
 
 namespace DeliveryOrder
 {
-    public static class DeliveryOrder
+    public class DeliveryOrder
     {
         [FunctionName("DeliveryOrder")]
-        public static async Task<IActionResult> Run(
+        public async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
             [CosmosDB(databaseName: "DeliveryOrders", collectionName: "orders", ConnectionStringSetting = "CosmosDbConnectionString")]IAsyncCollector<dynamic> documentsOut,
             ILogger log)
