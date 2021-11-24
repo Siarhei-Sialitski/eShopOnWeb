@@ -145,7 +145,7 @@ module linuxServicePlan 'modules/linuxserviceplan.bicep' = {
   name: 'linuxServicePlan'
   params:{
     location: location
-    sku: 'B1'
+    sku: 'F1'
     appServicePlanName: apiAppServicePlanName
   }
 }
@@ -180,10 +180,8 @@ module apiAppInstanse 'modules/containerapp.bicep' = {
   name: 'apiAppInstanse'
   params: {
     appKeyVaultName: apiAppkeyVaultName
-    applicationStack: currentStack
     appName: apiAppName
     location: location
-    netFrameworkVersion: netFrameworkVersion
     servicePlanResourceId: linuxServicePlan.outputs.id
     kind: 'app,linux,container'
   }

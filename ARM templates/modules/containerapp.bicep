@@ -10,12 +10,6 @@ param kind string
 @description('Web Application Key Vault Name.')
 param appKeyVaultName string
 
-@description('.Net Framework version.')
-param netFrameworkVersion string
-
-@description('Application Stack.')
-param applicationStack string
-
 @description('Service Plan Resoucre Id.')
 param servicePlanResourceId string
 
@@ -28,6 +22,12 @@ resource application 'Microsoft.Web/sites@2020-06-01' = {
   location: location
   properties: {
     siteConfig: {
+      appSettings: [
+        {
+          name: 'keyVaultName'
+          value: appKeyVaultName
+        }
+      ]
       linuxFxVersion: 'DOCKER|nginx'
       appCommandLine: ''
     }
