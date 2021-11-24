@@ -25,7 +25,7 @@ public class Program
         baseUrlConfig.WebBase = builder.Configuration.GetSection("webBase").Value;
         builder.Services.AddScoped<BaseUrlConfiguration>(sp => baseUrlConfig);
 
-        builder.Services.AddScoped(sp => new HttpClient() { BaseAddress = new Uri(baseUrlConfig.ApiBase) });
+        builder.Services.AddScoped(sp => new HttpClient() { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 
         builder.Services.AddScoped<ToastService>();
         builder.Services.AddScoped<HttpService>();
