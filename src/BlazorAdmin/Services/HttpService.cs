@@ -18,13 +18,15 @@ public class HttpService
     {
         _httpClient = httpClient;
         _toastService = toastService;
-        _apiUrl = baseUrlConfiguration.ApiBase;
+        _httpClient.BaseAddress = new System.Uri(baseUrlConfiguration.ApiBase);
+        _apiUrl = "/api/";
+        
     }
 
     public async Task<T> HttpGet<T>(string uri)
         where T : class
     {
-        var result = await _httpClient.GetAsync($"{_apiUrl}/api/{uri}");
+        var result = await _httpClient.GetAsync($"{_apiUrl}{uri}");
         if (!result.IsSuccessStatusCode)
         {
             return null;

@@ -28,7 +28,8 @@ public class CatalogLookupDataService<TLookupData, TReponse>
     {
         _httpClient = httpClient;
         _logger = logger;
-        _apiUrl = baseUrlConfiguration.ApiBase;
+        _httpClient.BaseAddress = new System.Uri(baseUrlConfiguration.ApiBase);
+        _apiUrl = "/api/";
     }
 
     public async Task<List<TLookupData>> List()
