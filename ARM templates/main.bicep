@@ -184,7 +184,7 @@ module apiAppInstanse 'modules/application.bicep' = {
     location: location
     netFrameworkVersion: netFrameworkVersion
     servicePlanResourceId: linuxServicePlan.outputs.id
-    kind: 'app,linux,container'
+    kind: 'app,windows,container'
   }
 }
 

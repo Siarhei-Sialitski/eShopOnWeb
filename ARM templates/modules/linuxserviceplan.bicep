@@ -10,12 +10,9 @@ param sku string
 resource applicationsServicePlan 'Microsoft.Web/serverfarms@2020-06-01' = {
   location: location
   name: appServicePlanName
-  kind: 'linux'
+  kind: 'windows'
   sku: {
     name: 'F1'
-  }
-  properties: {
-    reserved: true
   }
 }
 
