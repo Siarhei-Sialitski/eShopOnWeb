@@ -19,7 +19,7 @@ namespace OrderItemsReserver
         }
 
         [FunctionName("OrderItemsReserver")]
-        public async Task Run([ServiceBusTrigger("%QueueName%sbq-orders-prod-westeurope", Connection = "ServiceBusConnection")]string myQueueItem, 
+        public async Task Run([ServiceBusTrigger("%QueueName%", Connection = "ServiceBusConnection")]string myQueueItem, 
             [Blob("orders/{rand-guid}.json", FileAccess.ReadWrite, Connection = "AzureWebJobsStorage")] BlobContainerClient outputBlob,
             ILogger log)
         {

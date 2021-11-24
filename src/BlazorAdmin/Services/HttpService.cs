@@ -18,7 +18,7 @@ public class HttpService
     {
         _httpClient = httpClient;
         _toastService = toastService;
-        _apiUrl = baseUrlConfiguration.ApiBase;
+        _apiUrl = "/api/";//baseUrlConfiguration.ApiBase;
     }
 
     public async Task<T> HttpGet<T>(string uri)
