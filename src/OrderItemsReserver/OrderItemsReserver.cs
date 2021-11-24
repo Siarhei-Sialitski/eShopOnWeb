@@ -9,10 +9,10 @@ using Polly;
 
 namespace OrderItemsReserver
 {
-    public static class OrderItemsReserver
+    public class OrderItemsReserver
     {
         [FunctionName("OrderItemsReserver")]
-        public async static Task Run([ServiceBusTrigger("sbq-orders-prod-westeurope", Connection = "ServiceBusConnection")]string myQueueItem, 
+        public async Task Run([ServiceBusTrigger("sbq-orders-prod-westeurope", Connection = "ServiceBusConnection")]string myQueueItem, 
             [Blob("orders/{rand-guid}.json", FileAccess.ReadWrite, Connection = "AzureWebJobsStorage")] BlobContainerClient outputBlob,
             ILogger log)
         {
@@ -47,7 +47,7 @@ namespace OrderItemsReserver
             log.LogWarning("<-- Warehouse order process function.");
         }
 
-        private static async Task<bool> ProcessOrderWithLogicApp(ILogger log, string queueItem)
+        private async Task<bool> ProcessOrderWithLogicApp(ILogger log, string queueItem)
         {
             log.LogWarning("Blob upload failed, attempt to use Logic App as alternate processor.");
             var logicAppEndpoint = Environment.GetEnvironmentVariable("LogicAppEndpoint");

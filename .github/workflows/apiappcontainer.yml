@@ -24,6 +24,6 @@ jobs:
 
     - uses: azure/webapps-deploy@v2
       with:
-        app-name: 'app-api-prod-westeurope'
+        app-name: 'dockercontainertest'
         publish-profile: ${{ secrets.APIAPP_PUBLISH_PROFILE }}
         images: 'creshoponwebprodwesteurope.azurecr.io/apiapp:${{ github.sha }}'
