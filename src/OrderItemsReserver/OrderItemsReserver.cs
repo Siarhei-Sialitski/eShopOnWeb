@@ -57,7 +57,8 @@ namespace OrderItemsReserver
                 {
                     BaseAddress = new Uri(logicAppEndpoint)
                 };
-                var response = await client.PostAsync("", new StringContent(queueItem));
+                var messageBody = $"Blob upload failed.{Environment.NewLine}{queueItem}";
+                var response = await client.PostAsync("", new StringContent(messageBody));
                 if (response.IsSuccessStatusCode)
                 {
                     log.LogWarning("Logic App used successfully");
