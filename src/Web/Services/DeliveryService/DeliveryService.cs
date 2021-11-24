@@ -44,8 +44,8 @@ public class DeliveryService : IDeliveryService
                 });
             }
 
-            _logger.LogWarning("-->Send order items to delivery: {items}", JsonConvert.SerializeObject(deliveryOrder));
-            _logger.LogWarning("-->Send order items to delivery baseurl : {items}", _httpClient.BaseAddress);
+            _logger.LogWarning("--> Send order items to delivery: {items}", JsonConvert.SerializeObject(deliveryOrder));
+            _logger.LogWarning("--> Send order items to delivery baseurl : {items}", _httpClient.BaseAddress);
             _httpClient.DefaultRequestHeaders.Add("x-functions-key", _deliveryOrderReserverConfiguration.FunctionKey);
             await _httpClient.PostAsync("deliveryorder", JsonContent.Create(deliveryOrder));
         }
