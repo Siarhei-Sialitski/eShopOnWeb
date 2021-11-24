@@ -144,7 +144,7 @@ module linuxServicePlan 'modules/linuxserviceplan.bicep' = {
   name: 'linuxServicePlan'
   params:{
     location: location
-    sku: 'F1'
+    sku: 'P1V3'
     appServicePlanName: apiAppServicePlanName
   }
 }

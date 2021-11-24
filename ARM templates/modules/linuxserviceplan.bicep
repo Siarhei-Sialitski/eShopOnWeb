@@ -12,7 +12,7 @@ resource applicationsServicePlan 'Microsoft.Web/serverfarms@2020-06-01' = {
   name: appServicePlanName
   kind: 'windows'
   sku: {
-    name: 'F1'
+    name: sku
   }
 }
 
