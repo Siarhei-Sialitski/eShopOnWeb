@@ -17,7 +17,7 @@ namespace OrderItemsReserver
             ILogger log)
         {
             log.LogWarning("--> Warehouse order process function.");
-            log.LogWarning("Service bus message: {myQueueItem}", myQueueItem);
+            log.LogWarning("--> Service bus message: {myQueueItem}", myQueueItem);
             
             var policy = Policy.Handle<Exception>().WaitAndRetry(3,
                 attempt => TimeSpan.FromSeconds(0.1 * Math.Pow(2, attempt)),
