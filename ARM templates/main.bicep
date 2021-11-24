@@ -175,7 +175,7 @@ module webAppSecondaryInstanse 'modules/application.bicep' = {
   }
 }
 
-module apiAppInstanse 'modules/application.bicep' = {
+module apiAppInstanse 'modules/containerapp.bicep' = {
   name: 'apiAppInstanse'
   params: {
     appKeyVaultName: apiAppkeyVaultName
@@ -184,7 +184,7 @@ module apiAppInstanse 'modules/application.bicep' = {
     location: location
     netFrameworkVersion: netFrameworkVersion
     servicePlanResourceId: linuxServicePlan.outputs.id
-    kind: 'app,container'
+    kind: 'app,container,windows'
   }
 }
 
