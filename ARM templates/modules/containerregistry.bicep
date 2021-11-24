@@ -21,8 +21,9 @@ param servicePrincipalId string
 @allowed([
   'b24988ac-6180-42a0-ab88-20f7382dd24c' // Contributor
   'acdd72a7-3385-48ef-bd42-f606fba81ae7' // Reader
+  '7f951dda-4ed3-4680-a7ca-43fe172d538d' // Acr Pull
 ])
-param roleAcrPull string = 'b24988ac-6180-42a0-ab88-20f7382dd24c'
+param roleAcrPull string = '7f951dda-4ed3-4680-a7ca-43fe172d538d'
 
 
 resource acr 'Microsoft.ContainerRegistry/registries@2019-12-01-preview' = {
