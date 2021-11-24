@@ -11,7 +11,7 @@ namespace OrderItemsReserver
         private readonly HttpClient _httpClient;
 
         public SendEmailAlternateOrderProcessor(HttpClient httpClient,
-            ILogger log)
+            ILogger<SendEmailAlternateOrderProcessor> log)
         {
             _log = log;
             _httpClient = httpClient;
