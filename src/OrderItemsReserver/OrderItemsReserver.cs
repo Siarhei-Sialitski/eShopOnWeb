@@ -11,8 +11,15 @@ namespace OrderItemsReserver
 {
     public class OrderItemsReserver
     {
+        private readonly IAlternateOrderProcessor _alternateOrderProcessor;
+
+        public OrderItemsReserver(IAlternateOrderProcessor alternateOrderProcessor)
+        {
+            _alternateOrderProcessor = alternateOrderProcessor;
+        }
+
         [FunctionName("OrderItemsReserver")]
-        public async Task Run([ServiceBusTrigger("sbq-orders-prod-westeurope", Connection = "ServiceBusConnection")]string myQueueItem, 
+        public async Task Run([ServiceBusTrigger("%QueueName%sbq-orders-prod-westeurope", Connection = "ServiceBusConnection")]string myQueueItem, 
             [Blob("orders/{rand-guid}.json", FileAccess.ReadWrite, Connection = "AzureWebJobsStorage")] BlobContainerClient outputBlob,
             ILogger log)
         {
@@ -39,41 +46,12 @@ namespace OrderItemsReserver
             }
             catch (Exception)
             {
-                if (!await ProcessOrderWithLogicApp(log, myQueueItem))
+                if (!await _alternateOrderProcessor.ProcessAsync(myQueueItem))
                 {
                     throw;
                 }
             }
             log.LogWarning("<-- Warehouse order process function.");
-        }
-
-        private async Task<bool> ProcessOrderWithLogicApp(ILogger log, string queueItem)
-        {
-            log.LogWarning("Blob upload failed, attempt to use Logic App as alternate processor.");
-            var logicAppEndpoint = Environment.GetEnvironmentVariable("LogicAppEndpoint");
-            if (!string.IsNullOrEmpty(logicAppEndpoint))
-            {
-                var client = new HttpClient
-                {
-                    BaseAddress = new Uri(logicAppEndpoint)
-                };
-                var messageBody = $"Blob upload failed.{Environment.NewLine}{queueItem}";
-                var response = await client.PostAsync("", new StringContent(messageBody));
-                if (response.IsSuccessStatusCode)
-                {
-                    log.LogWarning("Logic App used successfully");
-                }
-                else
-                {
-                    log.LogError("Logic App processing failed.");
-                }
-                return true;
-            }
-            else
-            {
-                log.LogError("Logic App endpoint not configured.");
-                return false;
-            }
         }
 
     }

@@ -25,6 +25,8 @@ param serviceBusConnectionString string
 @description('Cosmos Database Connection String')
 param databaseAccountConnectionString string
 
+param queueName string
+
 resource functionAppServicePlan 'Microsoft.Web/serverfarms@2020-06-01' = {
   name: functionAppServicePlanName
   location: location
@@ -68,6 +70,10 @@ resource stockFunctionApp 'Microsoft.Web/sites@2020-06-01' = {
         {
           name: 'LogicAppEndpoint'
           value: 'https://prod-00.northcentralus.logic.azure.com:443/workflows/14541d2799834df293d4a81ce13c9b8b/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=m0lBa3Y7Tu_iI3N_rW_HJPyhrikO7Sy8J-lI5Zus5wU'
+        }
+        {
+          name: 'QueueName'
+          value: queueName
         }
       ]
       netFrameworkVersion: netFrameworkVersion

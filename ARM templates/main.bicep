@@ -227,6 +227,7 @@ module functions 'modules/functions.bicep' = {
     netFrameworkVersion: netFrameworkVersion
     appInsightsInstrumentationKey: util.outputs.appInsightsInstrumentationKey 
     deliveryFunctionAppName: deliveryFunctionAppName
+    queueName: serviceBusQueueName
   }
 }
 
@@ -236,6 +237,7 @@ module containerRegistry 'modules/containerregistry.bicep' = {
     location: location
     acrName: containerRegistryName
     acrAdminUserEnabled: true
+    servicePrincipalId: apiAppInstanse.outputs.applicationPrincipalId
   }
 }
 
@@ -269,11 +271,11 @@ module webAppKeyVault 'modules/keyvault.bicep' = {
       }
       // {
       //   name: 'DeliveryServiceConfiguration--FunctionBaseUrl'
-      //   value: 'https://func-delivery-prod-westeurope.azurewebsites.net/api/'
+      //   value: ''
       // }
       // {
       //   name: 'DeliveryServiceConfiguration--FunctionKey'
-      //   value: 'DNH0yIflYfVjliNwcnxQKqMu4VJFiPgAR8340HDAPdGa4yrTqTQTfQ=='
+      //   value: ''
       // }
       {
         name: 'ApplicationInsights--InstrumentationKey'
