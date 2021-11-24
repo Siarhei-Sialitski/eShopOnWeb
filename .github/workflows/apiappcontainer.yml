@@ -19,7 +19,7 @@ jobs:
         password: ${{ secrets.REGISTRY_PASSWORD }}
 
     - run: |
-        docker build -f src\PublicApi\Dockerfile -t creshoponwebprodwesteurope.azurecr.io/apiapp:${{ github.sha }} .
+        docker build -f src/PublicApi/Dockerfile -t creshoponwebprodwesteurope.azurecr.io/apiapp:${{ github.sha }} .
         docker push creshoponwebprodwesteurope.azurecr.io/apiapp:${{ github.sha }}     
 
     - uses: azure/webapps-deploy@v2
