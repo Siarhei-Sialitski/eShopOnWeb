@@ -18,8 +18,7 @@ public class HttpService
     {
         _httpClient = httpClient;
         _toastService = toastService;
-        _httpClient.BaseAddress = new System.Uri(baseUrlConfiguration.ApiBase);
-        _apiUrl = "/api/";
+        _apiUrl = baseUrlConfiguration.ApiBase;
         
     }
 
