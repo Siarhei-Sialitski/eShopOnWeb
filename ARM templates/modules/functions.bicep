@@ -49,11 +49,10 @@ resource stockFunctionApp 'Microsoft.Web/sites@2020-06-01' = {
           name: 'APPINSIGHTS_INSTRUMENTATIONKEY'
           value: appInsightsInstrumentationKey
         }
-        // Configure with Logic App Endpoint
-        // {
-        //   name: 'LogicAppEndpoint'
-        //   value: ''
-        // }
+        {
+          name: 'LogicAppEndpoint'
+          value: 'https://prod-81.westeurope.logic.azure.com:443/workflows/c2647276ccec4a23b5383343a0b028b8/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=Ko7uD2s5dRxr9a2ymLTbKg_A3g26j_8WqpLYNaZu0JQ'
+        }
         {
           name: 'QueueName'
           value: queueName
