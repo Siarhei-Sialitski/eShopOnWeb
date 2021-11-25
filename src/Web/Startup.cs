@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
+using Microsoft.AspNetCore.Rewrite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.eShopWeb.ApplicationCore.Interfaces;
 using Microsoft.eShopWeb.Infrastructure.Data;
@@ -27,6 +28,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
+using Microsoft.eShopWeb.Web.Services.WarehouseService;
+using Microsoft.eShopWeb.Web.Services.DeliveryService;
+using Microsoft.Extensions.Azure;
 
 namespace Microsoft.eShopWeb.Web;
 
@@ -44,10 +48,10 @@ public class Startup
     public void ConfigureDevelopmentServices(IServiceCollection services)
     {
         // use in-memory database
-        ConfigureInMemoryDatabases(services);
+        //ConfigureInMemoryDatabases(services);
 
         // use real database
-        //ConfigureProductionServices(services);
+        ConfigureProductionServices(services);
     }
 
     public void ConfigureDockerServices(IServiceCollection services)
@@ -92,12 +96,28 @@ public class Startup
         ConfigureInMemoryDatabases(services);
     }
 
-
     // This method gets called by the runtime. Use this method to add services to the container.
     public void ConfigureServices(IServiceCollection services)
     {
-        services.AddCookieSettings();
+        var warehouseServiceConfiguration = new WarehouseServiceConfiguration();
+        Configuration.Bind(WarehouseServiceConfiguration.CONFIG_NAME, warehouseServiceConfiguration);
+        services.AddScoped(sp => warehouseServiceConfiguration);
+        services.AddAzureClients(builder =>
+        {
+            builder.AddServiceBusClient(warehouseServiceConfiguration.ConnectionString);
+        });
+        services.AddScoped<IWarehouseService, WarehouseService>();
 
+        var deliveryService = new DeliveryServiceConfiguration();
+        Configuration.Bind(DeliveryServiceConfiguration.CONFIG_NAME, deliveryService);
+        services.AddScoped(sp => deliveryService);
+        services.AddHttpClient<IDeliveryService, DeliveryService>(client =>
+        {
+            client.BaseAddress = new Uri(deliveryService.FunctionBaseUrl);
+        });
+
+        services.AddApplicationInsightsTelemetry();
+        services.AddCookieSettings();             
 
         services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
             .AddCookie(options =>
@@ -121,9 +141,9 @@ public class Startup
         services.AddMemoryCache();
         services.AddRouting(options =>
         {
-                // Replace the type and the name used to refer to it with your own
-                // IOutboundParameterTransformer implementation
-                options.ConstraintMap["slugify"] = typeof(SlugifyParameterTransformer);
+            // Replace the type and the name used to refer to it with your own
+            // IOutboundParameterTransformer implementation
+            options.ConstraintMap["slugify"] = typeof(SlugifyParameterTransformer);
         });
         services.AddMvc(options =>
         {
@@ -145,10 +165,9 @@ public class Startup
         {
             config.Services = new List<ServiceDescriptor>(services);
 
-            config.Path = "/allservices";
+                config.Path = "/allservices";
         });
-
-
+            
         var baseUrlConfig = new BaseUrlConfiguration();
         Configuration.Bind(BaseUrlConfiguration.CONFIG_NAME, baseUrlConfig);
         services.AddScoped<BaseUrlConfiguration>(sp => baseUrlConfig);
@@ -218,14 +237,16 @@ public class Startup
             app.UseHsts();
         }
 
-        app.UseHttpsRedirection();
-        app.UseBlazorFrameworkFiles();
-        app.UseStaticFiles();
-        app.UseRouting();
+            app.UseRewriter(new RewriteOptions().AddRewrite(@"^appsettings\.json$", "configuration", false));
+            app.UseHttpsRedirection();
+            app.UseBlazorFrameworkFiles();
+            app.UseStaticFiles();
+            app.UseRouting();
 
-        app.UseCookiePolicy();
-        app.UseAuthentication();
-        app.UseAuthorization();
+            app.UseCookiePolicy();
+            app.UseCors();
+            app.UseAuthentication();
+            app.UseAuthorization();
 
         app.UseEndpoints(endpoints =>
         {

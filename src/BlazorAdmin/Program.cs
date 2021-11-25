@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 using BlazorAdmin.Services;
@@ -21,7 +21,8 @@ public class Program
         builder.RootComponents.Add<App>("#admin");
 
         var baseUrlConfig = new BaseUrlConfiguration();
-        builder.Configuration.Bind(BaseUrlConfiguration.CONFIG_NAME, baseUrlConfig);
+        baseUrlConfig.ApiBase = builder.Configuration.GetSection("apiBase").Value;
+        baseUrlConfig.WebBase = builder.Configuration.GetSection("webBase").Value;
         builder.Services.AddScoped<BaseUrlConfiguration>(sp => baseUrlConfig);
 
         builder.Services.AddScoped(sp => new HttpClient() { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });

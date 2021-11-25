@@ -12,7 +12,7 @@ public class Address // ValueObject
 
     public string ZipCode { get; private set; }
 
-    private Address() { }
+    public Address() { }
 
     public Address(string street, string city, string state, string country, string zipcode)
     {
@@ -22,4 +22,10 @@ public class Address // ValueObject
         Country = country;
         ZipCode = zipcode;
     }
+
+    public override string ToString()
+    {
+        return $"{Country}, {City}, {State}, {Street}, {ZipCode}";
+    }
+
 }

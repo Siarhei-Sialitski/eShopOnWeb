@@ -1,0 +1,29 @@
+name: Api container app
+
+on:
+  push:
+    branches:
+    - 'main'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - uses: azure/docker-login@v1
+      with:
+        login-server: creshoponwebprodwesteurope.azurecr.io
+        username: ${{ secrets.REGISTRY_USERNAME }}
+        password: ${{ secrets.REGISTRY_PASSWORD }}
+
+    - run: |
+        docker build -f src/PublicApi/Dockerfile -t creshoponwebprodwesteurope.azurecr.io/apiapp:${{ github.sha }} .
+        docker push creshoponwebprodwesteurope.azurecr.io/apiapp:${{ github.sha }}     
+
+    - uses: azure/webapps-deploy@v2
+      with:
+        app-name: 'app-api-prod-westeurope'
+        publish-profile: ${{ secrets.APIAPP_PUBLISH_PROFILE }}
+        images: 'creshoponwebprodwesteurope.azurecr.io/apiapp:${{ github.sha }}'
