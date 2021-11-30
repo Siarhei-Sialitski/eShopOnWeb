@@ -40,8 +40,8 @@ param trafficManagerDns string = 'eshoponwebss'
 
 var databaseAccountNameFormatted = toLower(databaseAccountName)
 var storageAccountNameFormatted = take(replace(toLower(storageAccountName), '-', ''), 24)
-var webAppkeyVaultName = 'kvwebeshop${environment}${location}'
-var apiAppkeyVaultName = 'kvapieshop${environment}${location}'
+var webAppkeyVaultName = 'kvwebeshp${environment}${location}'
+var apiAppkeyVaultName = 'kvapieshp${environment}${location}'
 var appInsightsName = 'appi-${environment}-${location}'
 
 module util 'modules/util.bicep' = {
@@ -213,15 +213,15 @@ module webAppKeyVault 'modules/keyvault.bicep' = {
         name: 'ConnectionStrings--IdentityConnection'
         value: sqlServer.outputs.identityDatabaseConnectionString
       }
-      // Secretes should be added here or manualy after function deploy when uri and key will be generated.
-      // {
-      //   name: 'DeliveryServiceConfiguration--FunctionBaseUrl'
-      //   value: ''
-      // }
-      // {
-      //   name: 'DeliveryServiceConfiguration--FunctionKey'
-      //   value: ''
-      // }
+      //Secretes should be added here or manualy after function deploy when uri and key will be generated.
+      {
+        name: 'DeliveryServiceConfiguration--FunctionBaseUrl'
+        value: 'https://func-delivery-prod-westeurope.azurewebsites.net/api/'
+      }
+      {
+        name: 'DeliveryServiceConfiguration--FunctionKey'
+        value: 'Jw3yww7CJIKfrVpM7w/wzKsTYTheHAoPnpeX73HDVMETja0GTCpJFA=='
+      }
       {
         name: 'ApplicationInsights--InstrumentationKey'
         value: util.outputs.appInsightsInstrumentationKey
