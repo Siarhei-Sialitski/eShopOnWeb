@@ -35,7 +35,7 @@ resource application 'Microsoft.Web/sites@2020-06-01' = {
           value: dockerRegistryUserName
         }
       ]
-      linuxFxVersion: 'DOCKER|nginx'
+      //linuxFxVersion: 'DOCKER|nginx'
       appCommandLine: ''
     }
     serverFarmId: servicePlanResourceId
