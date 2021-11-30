@@ -51,7 +51,7 @@ resource stockFunctionApp 'Microsoft.Web/sites@2020-06-01' = {
         }
         {
           name: 'LogicAppEndpoint'
-          value: 'https://prod-81.westeurope.logic.azure.com:443/workflows/c2647276ccec4a23b5383343a0b028b8/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=Ko7uD2s5dRxr9a2ymLTbKg_A3g26j_8WqpLYNaZu0JQ'
+          value: 'https://prod-06.northcentralus.logic.azure.com:443/workflows/efa6c0380abc452e9d1a77bea1727da8/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=R_ekcKrf9S4k1NJdVjKW4H8cxNY8ah6cBc8fc8wbW74'
         }
         {
           name: 'QueueName'
